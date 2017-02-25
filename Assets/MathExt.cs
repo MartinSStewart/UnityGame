@@ -88,5 +88,44 @@ namespace Assets
             }
             return isInside;
         }
+
+        /// <summary>
+        /// Returns true if vertices are ordered clockwise, false they are counter-clockwise.  It is assumed that the polygon they form is simple.
+        /// </summary>
+        /// <param name="polygon"></param>
+        public static bool IsClockwise(IList<Vector2> polygon)
+        {
+            Debug.Assert(polygon.Count >= 3);
+            double signedArea = 0;
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                int iNext = (i + 1) % polygon.Count;
+                signedArea += (polygon[i].x * polygon[iNext].y - polygon[iNext].x * polygon[i].y);
+            }
+            Debug.Assert(signedArea != 0, "Polygon has 0 area.");
+            return Math.Sign(signedArea) == -1;
+        }
+
+        /// <summary>
+        /// Get projection of this vector onto v1.
+        /// </summary>
+        /// <param name="v0"></param>
+        /// <param name="v1"></param>
+        public static Vector2 Project(this Vector2 v0, Vector2 v1)
+        {
+            var normal = v1.normalized;
+            return normal * Vector2.Dot(v0, normal);
+        }
+
+        /// <summary>
+        /// Reflects this vector across a normal.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="normal"></param>
+        /// <returns></returns>
+        public static Vector2 Mirror(this Vector2 v, Vector2 normal)
+        {
+            return v - 2 * (v - Project(v, normal));
+        }
     }
 }

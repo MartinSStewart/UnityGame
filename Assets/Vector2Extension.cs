@@ -26,5 +26,16 @@ namespace Assets
             v.y = (sin * tx) + (cos * ty);
             return v;
         }
+
+        /// <summary>
+        /// Returns a component-wise multiplication of two vectors.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="vector"></param>
+        /// <returns></returns>
+        public static Vector2 Multiply(this Vector2 v, Vector2 vector)
+        {
+            return new Vector2(v.x * vector.x, v.y * vector.y);
+        }
     }
 }

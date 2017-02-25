@@ -254,6 +254,7 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0f, -1f));
             var expected = new SurfaceCoord(triangle, 0, new Vector2(0.1f, 0f));
             Assert.IsTrue(SurfaceCoord.Equals(result, expected));
+            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.1f, 0f, 0f));
         }
 
         [TestMethod]
@@ -266,6 +267,7 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
             Assert.IsTrue(SurfaceCoord.Equals(result, expected));
+            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
         }
 
         [TestMethod]
@@ -278,6 +280,7 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0f, 0.85f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.05f, 0.1f), 270);
             Assert.IsTrue(SurfaceCoord.Equals(result, expected));
+            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.1f, 0.95f, 0f));
         }
 
         [TestMethod]
@@ -293,19 +296,37 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
             Assert.IsTrue(SurfaceCoord.Equals(result, expected));
+            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
         }
 
-        //[TestMethod]
-        //public void MoveTest3()
-        //{
-        //    var quad = GetAxisAlignedQuad();
-        //    quad.Triangles = quad.Triangles.Reverse().ToArray();
+        [TestMethod]
+        public void MoveTest4()
+        {
+            var quad = GetAxisAlignedQuad();
+            quad.Triangles[3] = 3;
+            quad.Triangles[4] = 1;
+            quad.Triangles[5] = 2;
 
-        //    var coord = new SurfaceCoord(quad, 0, new Vector2(0.9f, 0.1f));
+            var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
-        //    var result = coord.Move(new Vector2(-0.7f, 0.7f));
-        //    var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.2f));
-        //    Assert.IsTrue(SurfaceCoord.Equals(result, expected));
-        //}
+            var result = coord.Move(new Vector2(0.7f, 0.7f));
+            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
+        }
+
+        [TestMethod]
+        public void MoveTest5()
+        {
+            var quad = GetAxisAlignedQuad();
+            quad.Triangles[3] = 3;
+            quad.Triangles[4] = 1;
+            quad.Triangles[5] = 2;
+
+            quad.Vertices[3] = new Vector3(2f, 2f, 0f);
+
+            var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
+
+            var result = coord.Move(new Vector2(0.7f, 0.7f));
+            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
+        }
     }
 }
