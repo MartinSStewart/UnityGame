@@ -11,8 +11,18 @@ namespace Assets
         {
             if (!condition)
             {
-                //Place a breakpoint here so Unity stops execution at the correct place.
+                Break();
             }
+        }
+
+        public static void Fail(string message = null)
+        {
+            Break();
+        }
+
+        public static void Break()
+        {
+            // Place breakpoint here.
         }
     }
 }

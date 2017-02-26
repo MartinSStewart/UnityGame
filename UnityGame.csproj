@@ -80,7 +80,7 @@
     <Compile Include="Assets\Constants.cs" />
     <Compile Include="Assets\Controller.cs" />
     <Compile Include="Assets\Debug.cs" />
-    <Compile Include="Assets\EdgeIndex.cs" />
+    <Compile Include="Assets\TriangleEdge.cs" />
     <Compile Include="Assets\LineF.cs" />
     <Compile Include="Assets\Logic.cs" />
     <Compile Include="Assets\MathExt.cs" />

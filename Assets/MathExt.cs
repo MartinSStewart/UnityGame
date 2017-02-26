@@ -127,5 +127,21 @@ namespace Assets
         {
             return v - 2 * (v - Project(v, normal));
         }
+
+        /// <summary>
+        /// Mods value without ending up with negative values.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="mod"></param>
+        /// <returns></returns>
+        public static double ValueWrap(double value, double mod)
+        {
+            value = value % mod;
+            if (value < 0)
+            {
+                return mod + value;
+            }
+            return value;
+        }
     }
 }

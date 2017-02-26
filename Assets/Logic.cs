@@ -18,6 +18,7 @@ namespace Assets
             }
             catch(Exception e)
             {
+                Debug.Break();
                 throw e;
             }
         }
@@ -30,6 +31,7 @@ namespace Assets
             }
             catch(Exception e)
             {
+                Debug.Break();
                 throw e;
             }
         }

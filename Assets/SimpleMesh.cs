@@ -6,15 +6,19 @@ using UnityEngine;
 
 namespace Assets
 {
+    /// <summary>
+    /// Custom mesh implementation used in place of UnityEngine.Mesh to allow for VS unit testing. 
+    /// Also supports fast lookup of adjacent triangles.
+    /// </summary>
     public class SimpleMesh
     {
         /// <summary>
-        /// Indices pointing into the _vertices array.  The indices are stored as [triangle index, edge index].
+        /// Indices pointing into the _vertices array. The indices are stored as [triangle index, edge index].
         /// </summary>
         readonly int[,] _triangles;
         readonly Vector3[] _vertices;
         /// <summary>
-        /// Lookup table for finding neighboring triangles.  The data is stored as [triangle index, edge index].
+        /// Lookup table for finding neighboring triangles. The data is stored as [triangle index, edge index].
         /// </summary>
         readonly int?[,] _adjacentTriangles;
 
@@ -25,7 +29,7 @@ namespace Assets
 
         public SimpleMesh(Vector3[] vertices, int[] triangles)
         {
-            Debug.Assert(triangles.Length % 3 == 0);
+            Debug.Assert(triangles.Length % Constants.SidesOnTriangle == 0);
 
             _triangles = new int[triangles.Length / Constants.SidesOnTriangle, Constants.SidesOnTriangle];
             _adjacentTriangles = new int?[_triangles.GetLength(0), Constants.SidesOnTriangle];

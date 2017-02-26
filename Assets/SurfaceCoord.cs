@@ -101,8 +101,8 @@ namespace Assets
         {
             return coord0.Mesh == coord1.Mesh &&
                 coord0.Coord == coord1.Coord &&
-                coord0.TriangleIndex == coord1.TriangleIndex;// && 
-                //coord0.Rotation == coord1.Rotation;
+                coord0.TriangleIndex == coord1.TriangleIndex && 
+                coord0.Rotation == coord1.Rotation;
         }
 
         public SurfaceCoord Move(Vector2 v)
@@ -167,7 +167,8 @@ namespace Assets
                     float movementLeft = (v - (nearest.Position - Coord)).magnitude;
                     
                     float angle0 = Vector2.Angle(edge.Delta, v);
-                    float rotationOffset = Vector2.Angle(edge.Delta, edgeNext.Delta);
+                    float rotationOffset = -Vector2.Angle(edge.Delta, edgeNext.Delta);
+                    rotationOffset = (float)MathExt.ValueWrap(rotationOffset, 360);
                     Vector2 vNext = edgeNext.Delta.normalized.Rotate(angle0) * movementLeft;
                     //if (MathExt.IsClockwise(surfaceTriangleNext) != MathExt.IsClockwise(surfaceTriangle))
                     if ((edgeIndexNext.StartIndex + 1) % SidesOnTriangle == edgeIndexNext.EndIndex)
