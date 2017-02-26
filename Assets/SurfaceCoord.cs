@@ -25,35 +25,13 @@ namespace Assets
             Rotation = rotation;
         }
 
-        public Vector3[] GetTriangle()
-        {
-            int index = TriangleIndex * SidesOnTriangle;
-            return new[]
-            {
-                Mesh.Vertices[Mesh.Triangles[index]],
-                Mesh.Vertices[Mesh.Triangles[index + 1]],
-                Mesh.Vertices[Mesh.Triangles[index + 2]]
-            };
-        }
-
-        public int[] GetTriangleIndices()
-        {
-            int index = TriangleIndex * SidesOnTriangle;
-            return new[]
-            {
-                Mesh.Triangles[index],
-                Mesh.Triangles[index + 1],
-                Mesh.Triangles[index + 2]
-            };
-        }
-
         /// <summary>
         /// Get triangle relative to surface coordinates.
         /// </summary>
         /// <returns></returns>
         public Vector2[] GetSurfaceTriangle()
         {
-            Vector3[] triangle = GetTriangle();
+            Vector3[] triangle = Mesh.GetTriangle(TriangleIndex);
             Vector3 origin = GetLocalOrigin();
             Vector3[] axis = GetXYAxis();
 
@@ -72,7 +50,7 @@ namespace Assets
         /// <returns></returns>
         Vector3 GetLocalOrigin()
         {
-            return GetTriangle()[0];
+            return Mesh.GetTriangle(TriangleIndex)[0];
         }
 
         /// <summary>
@@ -81,7 +59,7 @@ namespace Assets
         /// <returns></returns>
         public Vector3[] GetXYAxis()
         {
-            Vector3[] triangle = GetTriangle();
+            Vector3[] triangle = Mesh.GetTriangle(TriangleIndex);
 
             Vector3 yAxis = (triangle[1] - triangle[0]).normalized;
 
@@ -164,14 +142,14 @@ namespace Assets
 
             if (nearest != null)
             {
-                int? triangleIndexNext = GetAdjacentTriangle((int)nearestEdge);
+                int? triangleIndexNext = Mesh.GetAdjacentTriangle(TriangleIndex, (int)nearestEdge);
                 if (triangleIndexNext == null)
                 {
                     return new SurfaceCoord(Mesh, TriangleIndex, nearest.Position, Rotation);
                 }
                 else
                 {
-                    var triangle = GetTriangle();
+                    var triangle = Mesh.GetTriangle(TriangleIndex);
                     LineF commonEdge = new LineF(triangle[(int)nearestEdge], triangle[((int)nearestEdge + 1) % SidesOnTriangle]);
                     var surfaceCoord = new SurfaceCoord(Mesh, (int)triangleIndexNext)
                         .GetSurfaceCoord(commonEdge.Lerp(nearest.Last));
@@ -182,9 +160,9 @@ namespace Assets
                         Rotation);
 
                     var surfaceTriangleNext = new SurfaceCoord(Mesh, (int)triangleIndexNext).GetSurfaceTriangle();
-                    EdgeIndex edgeIndexNext = GetAdjacentTriangleEdgeIndex((int)nearestEdge);
+                    TriangleEdge edgeIndexNext = Mesh.GetAdjacentEdge(TriangleIndex, (int)nearestEdge);
                     LineF edge = new LineF(surfaceTriangle[(int)nearestEdge], surfaceTriangle[(int)(nearestEdge + 1) % SidesOnTriangle]);
-                    LineF edgeNext = new LineF(surfaceTriangleNext[edgeIndexNext.Start], surfaceTriangleNext[edgeIndexNext.End]);
+                    LineF edgeNext = new LineF(surfaceTriangleNext[edgeIndexNext.StartIndex], surfaceTriangleNext[edgeIndexNext.EndIndex]);
 
                     float movementLeft = (v - (nearest.Position - Coord)).magnitude;
                     
@@ -192,7 +170,7 @@ namespace Assets
                     float rotationOffset = Vector2.Angle(edge.Delta, edgeNext.Delta);
                     Vector2 vNext = edgeNext.Delta.normalized.Rotate(angle0) * movementLeft;
                     //if (MathExt.IsClockwise(surfaceTriangleNext) != MathExt.IsClockwise(surfaceTriangle))
-                    if ((edgeIndexNext.Start + 1) % SidesOnTriangle == edgeIndexNext.End)
+                    if ((edgeIndexNext.StartIndex + 1) % SidesOnTriangle == edgeIndexNext.EndIndex)
                     {
                         Vector2 normal = edgeNext.Delta; //new Vector2(-edgeNext.Delta.y, edgeNext.Delta.x);
                         vNext = vNext.Mirror(normal);
@@ -213,88 +191,6 @@ namespace Assets
             var axis = GetXYAxis();
             Vector3 v = coord - GetLocalOrigin();
             return new Vector2(Vector3.Dot(axis[0], v), Vector3.Dot(axis[1], v));
-        }
-
-        EdgeIndex GetAdjacentTriangleEdgeIndex(int edgeIndex)
-        {
-            var triangle = GetTriangle();
-            int? adjacentTriangleIndex = GetAdjacentTriangle(edgeIndex);
-            if (adjacentTriangleIndex == null)
-            {
-                return null;
-            }
-            var adjacentTriangle = new SurfaceCoord(Mesh, (int)adjacentTriangleIndex).GetTriangle();
-
-            for (int i = 0; i < SidesOnTriangle; i++)
-            {
-                for (int j = 0; j < SidesOnTriangle; j++)
-                {
-                    if (triangle[i] == adjacentTriangle[j])
-                    {
-                        int iNext = (i + 1) % SidesOnTriangle;
-                        int jNext = (j + 1) % SidesOnTriangle;
-                        int jPrev = (j + SidesOnTriangle - 1) % SidesOnTriangle;
-                        if (triangle[iNext] == adjacentTriangle[jNext])
-                        {
-                            return new EdgeIndex(j, jNext);
-                        }
-                        else if (triangle[iNext] == adjacentTriangle[jPrev])
-                        {
-                            return new EdgeIndex(j, jPrev);
-                        }
-                        else
-                        {
-                            Debug.Assert(true, "Execution should not have reached this point.");
-                            return null;
-                        }
-                    }
-                }
-            }
-            Debug.Assert(true, "Execution should not have reached this point.");
-            return null;
-        }
-
-        class EdgeIndex
-        {
-            public readonly int Start, End;
-
-            public EdgeIndex(int startIndex, int endIndex)
-            {
-                Debug.Assert(startIndex < SidesOnTriangle && startIndex >= 0);
-                Debug.Assert(endIndex < SidesOnTriangle && endIndex >= 0);
-                Start = startIndex;
-                End = endIndex;
-            }
-        }
-
-        int? GetAdjacentTriangle(int edgeIndex)
-        {
-            Debug.Assert(edgeIndex >= 0 && edgeIndex < SidesOnTriangle);
-
-            int index = TriangleIndex * SidesOnTriangle;
-            int vertexIndice0 = Mesh.Triangles[index + edgeIndex];
-            int vertexIndice1 = Mesh.Triangles[index + (edgeIndex + 1) % SidesOnTriangle];
-
-            for (int i = 0; i < Mesh.Triangles.Length / SidesOnTriangle; i++)
-            {
-                if (i == TriangleIndex)
-                {
-                    continue;
-                }
-                int i1 = i * 3;
-                if (Mesh.Triangles[i1] == vertexIndice0 || 
-                    Mesh.Triangles[i1 + 1] == vertexIndice0 || 
-                    Mesh.Triangles[i1 + 2] == vertexIndice0)
-                {
-                    if (Mesh.Triangles[i1] == vertexIndice1 ||
-                        Mesh.Triangles[i1 + 1] == vertexIndice1 ||
-                        Mesh.Triangles[i1 + 2] == vertexIndice1)
-                    {
-                        return i;
-                    }
-                }
-            }
-            return null;
         }
     }
 }

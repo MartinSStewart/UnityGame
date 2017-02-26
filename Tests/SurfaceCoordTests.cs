@@ -11,16 +11,12 @@ namespace UnitTests
     {
         public SimpleMesh GetAxisAlignedTriangle()
         {
-            return new SimpleMesh()
-            {
-                Vertices = new[]
+            return new SimpleMesh(new[]
                 {
                     new Vector3(),
                     new Vector3(0, 1, 0),
                     new Vector3(1, 0, 0)
-                },
-                Triangles = new[] { 0, 1, 2 }
-            };
+                }, new[] { 0, 1, 2 });
         }
 
         [TestMethod]
@@ -109,16 +105,13 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest7()
         {
-            SimpleMesh triangle = new SimpleMesh()
-            {
-                Vertices = new[]
-                {
+            SimpleMesh triangle = new SimpleMesh(
+                new[] {
                     new Vector3(),
                     new Vector3(0, 0, 1),
                     new Vector3(1, 0, 0)
                 },
-                Triangles = new[] { 0, 1, 2 }
-            };
+                new[] { 0, 1, 2 });
 
             var coord = new SurfaceCoord(triangle, 0, new Vector2(0.2f, 0.6f));
 
@@ -133,16 +126,13 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest8()
         {
-            SimpleMesh triangle = new SimpleMesh()
-            {
-                Vertices = new[]
-                {
+            SimpleMesh triangle = new SimpleMesh(
+                new[] {
                     new Vector3(),
                     new Vector3(0, 0, 1),
                     new Vector3(0.5f, 0, 0)
                 },
-                Triangles = new[] { 0, 1, 2 }
-            };
+                new[] { 0, 1, 2 });
 
             var coord = new SurfaceCoord(triangle, 0, new Vector2(0.2f, 0.6f));
 
@@ -157,16 +147,14 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest9()
         {
-            SimpleMesh triangle = new SimpleMesh()
-            {
-                Vertices = new[]
+            SimpleMesh triangle = new SimpleMesh(
+                new[]
                 {
                     new Vector3(),
                     new Vector3(0, 0, 1),
                     new Vector3(0.5f, 0, 0.3f)
                 },
-                Triangles = new[] { 0, 1, 2 }
-            };
+                new[] { 0, 1, 2 });
 
             var coord = new SurfaceCoord(triangle, 0, new Vector2(0.2f, 0.6f));
 
@@ -184,11 +172,7 @@ namespace UnitTests
             {
                 vertices[i] = new Vector3((float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500);
             }
-            return new SimpleMesh()
-            {
-                Vertices = vertices,
-                Triangles = new[] { 0, 1, 2 }
-            };
+            return new SimpleMesh(vertices, new[] { 0, 1, 2 });
         }
 
         /// <summary>
@@ -220,28 +204,24 @@ namespace UnitTests
                 var coord = new SurfaceCoord(GetRandomTriangle(), 0, new Vector2(0.2f, 0.6f));
 
                 var result = coord.GetSurfaceTriangle();
-                var expected = new Vector2(0, (coord.GetTriangle()[1] - coord.GetTriangle()[0]).magnitude);
+                var expected = new Vector2(0, (coord.Mesh.GetTriangle(coord.TriangleIndex)[1] - coord.Mesh.GetTriangle(coord.TriangleIndex)[0]).magnitude);
                 Assert.IsTrue((result[1] - expected).magnitude < maxErrorDelta);
             }
         }
 
         public SimpleMesh GetAxisAlignedQuad()
         {
-            return new SimpleMesh()
-            {
-                Vertices = new[]
-                {
+            return new SimpleMesh(
+                new[] {
                     new Vector3(),
                     new Vector3(0, 1, 0),
                     new Vector3(1, 0, 0),
                     new Vector3(1, 1, 0)
                 },
-                Triangles = new[]
-                {
+                new[] {
                     0, 1, 2, //First triangle
                     1, 3, 2 //Second triangle
-                }
-            };
+                });
         }
 
         [TestMethod]
@@ -286,10 +266,17 @@ namespace UnitTests
         [TestMethod]
         public void MoveTest3()
         {
-            var quad = GetAxisAlignedQuad();
-            quad.Triangles[3] = 2;
-            quad.Triangles[4] = 3;
-            quad.Triangles[5] = 1;
+            var quad = new SimpleMesh(
+                new[] {
+                    new Vector3(),
+                    new Vector3(0, 1, 0),
+                    new Vector3(1, 0, 0),
+                    new Vector3(1, 1, 0)
+                },
+                new[] {
+                    0, 1, 2, // First triangle.
+                    2, 3, 1 // Second triangle, now reversed order.
+                });
 
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
@@ -302,10 +289,17 @@ namespace UnitTests
         [TestMethod]
         public void MoveTest4()
         {
-            var quad = GetAxisAlignedQuad();
-            quad.Triangles[3] = 3;
-            quad.Triangles[4] = 1;
-            quad.Triangles[5] = 2;
+            var quad = new SimpleMesh(
+                new[] {
+                    new Vector3(),
+                    new Vector3(0, 1, 0),
+                    new Vector3(1, 0, 0),
+                    new Vector3(1, 1, 0)
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    3, 1, 2 //Second triangle, now with 2 indices flipped.
+                });
 
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
@@ -316,12 +310,17 @@ namespace UnitTests
         [TestMethod]
         public void MoveTest5()
         {
-            var quad = GetAxisAlignedQuad();
-            quad.Triangles[3] = 3;
-            quad.Triangles[4] = 1;
-            quad.Triangles[5] = 2;
-
-            quad.Vertices[3] = new Vector3(2f, 2f, 0f);
+            var quad = new SimpleMesh(
+                new[] {
+                    new Vector3(),
+                    new Vector3(0, 1, 0),
+                    new Vector3(1, 0, 0),
+                    new Vector3(2f, 2f, 0) //Last vertice is moved.
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    3, 1, 2 //Second triangle
+                });
 
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
