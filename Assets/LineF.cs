@@ -31,5 +31,24 @@ namespace Assets
         {
             return MathExt.Lerp(_vertices[0], _vertices[1], t);
         }
+
+        /// <summary>
+        /// Returns whether a point is left or right of this line.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="ignoreEdgeCase">Whether or not to treat points exactly on the line as to the right of it instead.</param>
+        public Side GetSideOf(Vector2 point, bool ignoreEdgeCase = true)
+        {
+            double p = (this[1].x - this[0].x) * (point.y - this[0].y) - (this[1].y - this[0].y) * (point.x - this[0].x);
+            if (p > 0)
+            {
+                return Side.Left;
+            }
+            if (p == 0 && !ignoreEdgeCase)
+            {
+                return Side.Neither;
+            }
+            return Side.Right;
+        }
     }
 }

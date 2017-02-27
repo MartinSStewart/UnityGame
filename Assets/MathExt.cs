@@ -143,5 +143,20 @@ namespace Assets
             }
             return value;
         }
+
+        /// <summary>
+        /// Returns a copy of the polygon with the new winding order set.
+        /// </summary>
+        /// <param name="polygon">A polygon represented as a list of vectors.</param>
+        /// <param name="clockwise">Clockwise if true, C.Clockwise if false.</param>
+        /// <returns></returns>
+        public static Vector2[] SetWinding(Vector2[] polygon, bool clockwise)
+        {
+            if (IsClockwise(polygon) != clockwise)
+            {
+                return polygon.Reverse().ToArray();
+            }
+            return polygon;
+        }
     }
 }

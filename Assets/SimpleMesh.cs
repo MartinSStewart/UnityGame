@@ -88,7 +88,9 @@ namespace Assets
                         Debug.Assert(triangleIndex > i);
 
                         _adjacentTriangles[i, j] = triangleIndex;
-                        _adjacentTriangles[(int)triangleIndex, GetAdjacentEdge(i, j).GetLeadingIndex()] = i;
+                        var edge = GetAdjacentEdge(i, j);
+                        Debug.Assert(edge != null);
+                        _adjacentTriangles[(int)triangleIndex, edge.GetLeadingIndex()] = i;
                     }
                 }
             }
@@ -129,35 +131,29 @@ namespace Assets
 
         public TriangleEdge GetAdjacentEdge(int triangleIndex, int edgeIndex)
         {
-            var triangle = GetTriangle(triangleIndex);
-            int? adjacentTriangleIndex = GetAdjacentTriangle(triangleIndex, edgeIndex);
-            if (adjacentTriangleIndex == null)
+            int? temp = GetAdjacentTriangle(triangleIndex, edgeIndex);
+            if (temp == null)
             {
                 return null;
             }
-            var adjacentTriangle = GetTriangle((int)adjacentTriangleIndex);
+            int adjacentTriangleIndex = (int)temp;
 
             for (int i = 0; i < Constants.SidesOnTriangle; i++)
             {
                 for (int j = 0; j < Constants.SidesOnTriangle; j++)
                 {
-                    if (triangle[i] == adjacentTriangle[j])
+                    if (_triangles[triangleIndex, i] == _triangles[adjacentTriangleIndex, j])
                     {
                         int iNext = (i + 1) % Constants.SidesOnTriangle;
                         int jNext = (j + 1) % Constants.SidesOnTriangle;
                         int jPrev = (j + Constants.SidesOnTriangle - 1) % Constants.SidesOnTriangle;
-                        if (triangle[iNext] == adjacentTriangle[jNext])
+                        if (_triangles[triangleIndex, iNext] == _triangles[adjacentTriangleIndex, jNext])
                         {
                             return new TriangleEdge(j, jNext);
                         }
-                        else if (triangle[iNext] == adjacentTriangle[jPrev])
+                        else if (_triangles[triangleIndex, iNext] == _triangles[adjacentTriangleIndex, jPrev])
                         {
                             return new TriangleEdge(j, jPrev);
-                        }
-                        else
-                        {
-                            Debug.Assert(true, "Execution should not have reached this point.");
-                            return null;
                         }
                     }
                 }

@@ -10,19 +10,27 @@ namespace Assets
     {
         public readonly SimpleMesh Mesh;
         public readonly int TriangleIndex;
+        public readonly int EdgePrevious;
         public readonly Vector2 Coord;
         public readonly float Rotation;
         public readonly bool FrontSide;
 
         const int SidesOnTriangle = 3;
 
-        public SurfaceCoord(SimpleMesh mesh, int triangleIndex, Vector2 coord = new Vector2(), float rotation = 0, bool frontSide = true)
+        public SurfaceCoord(
+            SimpleMesh mesh, 
+            int triangleIndex, 
+            Vector2 coord = new Vector2(), 
+            float rotation = 0, 
+            bool frontSide = true, 
+            int edgePrevious = 0)
         {
             Mesh = mesh;
             TriangleIndex = triangleIndex;
+            Rotation = rotation;
             Coord = coord;
             FrontSide = frontSide;
-            Rotation = rotation;
+            EdgePrevious = edgePrevious;
         }
 
         /// <summary>
@@ -121,6 +129,7 @@ namespace Assets
                 return new SurfaceCoord(Mesh, TriangleIndex, Coord, Rotation, FrontSide);
             }
             var surfaceTriangle = GetSurfaceTriangle();
+            bool clockwise = MathExt.IsClockwise(surfaceTriangle);
 
             IntersectCoord nearest = null;
             int? nearestEdge = null;
@@ -130,8 +139,9 @@ namespace Assets
                 int iNext = (i + 1) % surfaceTriangle.Length;
                 LineF edge = new LineF(surfaceTriangle[i], surfaceTriangle[iNext]);
                 var intersection = MathExt.LineLineIntersect(movement, edge, true);
-                
-                if (intersection != null && intersection.First > 0.001)
+
+                Side sideOfLine = edge.GetSideOf(Coord + v, false);
+                if (intersection != null && (clockwise == (sideOfLine == Side.Left) || sideOfLine == Side.Neither))
                 {
                     nearest = intersection;
                     nearestEdge = i;
@@ -145,7 +155,7 @@ namespace Assets
                 int? triangleIndexNext = Mesh.GetAdjacentTriangle(TriangleIndex, (int)nearestEdge);
                 if (triangleIndexNext == null)
                 {
-                    return new SurfaceCoord(Mesh, TriangleIndex, nearest.Position, Rotation);
+                    return new SurfaceCoord(Mesh, TriangleIndex, nearest.Position, Rotation, FrontSide, EdgePrevious);
                 }
                 else
                 {
@@ -177,13 +187,13 @@ namespace Assets
                         vNext = vNext.Mirror(normal);
                     }
                     
-                    var coordNext = new SurfaceCoord(coord.Mesh, coord.TriangleIndex, coord.Coord, coord.Rotation + rotationOffset);
+                    var coordNext = new SurfaceCoord(coord.Mesh, coord.TriangleIndex, coord.Coord, coord.Rotation + rotationOffset, FrontSide, edgeIndexNext.GetLeadingIndex());
                     return coordNext._move(vNext);
                 }
             }
             else
             {
-                return new SurfaceCoord(Mesh, TriangleIndex, Coord + v, Rotation);
+                return new SurfaceCoord(Mesh, TriangleIndex, Coord + v, Rotation, FrontSide, EdgePrevious);
             }
         }
 
