@@ -161,5 +161,58 @@ namespace Assets
             Debug.Assert(true, "Execution should not have reached this point.");
             return null;
         }
+
+        public Vector2 TriangleSurfaceCoord(int triangleIndex, Vector3 coord)
+        {
+            var axis = TriangleXYAxis(triangleIndex);
+            Vector3 v = coord - TriangleLocalOrigin(triangleIndex);
+            return new Vector2(Vector3.Dot(axis[0], v), Vector3.Dot(axis[1], v));
+        }
+
+        /// <summary>
+        /// Get the origin of the surface relative to the parent mesh.
+        /// </summary>
+        /// <returns></returns>
+        public Vector3 TriangleLocalOrigin(int triangleIndex)
+        {
+            return GetTriangle(triangleIndex)[0];
+        }
+
+        /// <summary>
+        /// Get the xy axis of the surface relative the parent mesh.
+        /// </summary>
+        /// <returns></returns>
+        public Vector3[] TriangleXYAxis(int triangleIndex)
+        {
+            Vector3[] triangle = GetTriangle(triangleIndex);
+
+            Vector3 yAxis = (triangle[1] - triangle[0]).normalized;
+
+            Vector3 xAxis = triangle[2] - triangle[0];
+            //Adjust the xAxis so that it is orthogonal to the yAxis.
+            Vector3 projection = Vector3.Dot(yAxis, xAxis) * yAxis;
+            xAxis = (xAxis - projection).normalized;
+
+            return new[] { xAxis, yAxis };
+        }
+
+        /// <summary>
+        /// Get triangle relative to surface coordinates.
+        /// </summary>
+        /// <returns></returns>
+        public Vector2[] GetSurfaceTriangle(int triangleIndex)
+        {
+            Vector3[] triangle = GetTriangle(triangleIndex);
+            Vector3 origin = TriangleLocalOrigin(triangleIndex);
+            Vector3[] axis = TriangleXYAxis(triangleIndex);
+
+            Vector2[] surfaceTriangle = new Vector2[Constants.SidesOnTriangle];
+            for (int i = 0; i < triangle.Length; i++)
+            {
+                Vector3 v = triangle[i] - origin;
+                surfaceTriangle[i] = new Vector2(Vector3.Dot(axis[0], v), Vector3.Dot(axis[1], v));
+            }
+            return surfaceTriangle;
+        }
     }
 }

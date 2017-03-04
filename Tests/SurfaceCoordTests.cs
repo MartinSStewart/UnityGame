@@ -163,52 +163,6 @@ namespace UnitTests
             Assert.IsTrue(result == expected);
         }
 
-        SimpleMesh GetRandomTriangle()
-        {
-            //Create random number generator for getting random triangles.
-            System.Random rand = new System.Random(123123);
-            Vector3[] vertices = new Vector3[3];
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                vertices[i] = new Vector3((float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500);
-            }
-            return new SimpleMesh(vertices, new[] { 0, 1, 2 });
-        }
-
-        /// <summary>
-        /// Test if the first point is in the correct spot on a bunch of random triangles.
-        /// </summary>
-        [TestMethod]
-        public void SurfaceTrianglesFirstPointIsOnOrigin()
-        {
-            const double maxErrorDelta = 0.0001f;
-            for (int i = 0; i < 1000; i++)
-            {
-                var coord = new SurfaceCoord(GetRandomTriangle(), 0, new Vector2(0.2f, 0.6f));
-
-                var result = coord.GetSurfaceTriangle();
-                Assert.IsTrue(result[0].magnitude < maxErrorDelta);
-            }
-
-        }
-
-        /// <summary>
-        /// Test if the second point is in the correct spot on a bunch of random triangles.
-        /// </summary>
-        [TestMethod]
-        public void SurfaceTrianglesSecondPointIsOnYAxis()
-        {
-            const double maxErrorDelta = 0.0001f;
-            for (int i = 0; i < 1000; i++)
-            {
-                var coord = new SurfaceCoord(GetRandomTriangle(), 0, new Vector2(0.2f, 0.6f));
-
-                var result = coord.GetSurfaceTriangle();
-                var expected = new Vector2(0, (coord.Mesh.GetTriangle(coord.TriangleIndex)[1] - coord.Mesh.GetTriangle(coord.TriangleIndex)[0]).magnitude);
-                Assert.IsTrue((result[1] - expected).magnitude < maxErrorDelta);
-            }
-        }
-
         public SimpleMesh GetAxisAlignedQuad()
         {
             return new SimpleMesh(
@@ -233,8 +187,8 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0f, -1f));
             var expected = new SurfaceCoord(triangle, 0, new Vector2(0.1f, 0f));
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected));
-            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.1f, 0f, 0f));
+            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).magnitude < 0.001f);
         }
 
         [TestMethod]
@@ -246,8 +200,8 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected));
-            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
+            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
 
         [TestMethod]
@@ -259,8 +213,8 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0f, 0.85f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.05f, 0.1f), 270);
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected));
-            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.1f, 0.95f, 0f));
+            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0.95f, 0f)).magnitude < 0.001f);
         }
 
         [TestMethod]
@@ -282,8 +236,8 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected));
-            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
+            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
 
         [TestMethod]
@@ -304,7 +258,7 @@ namespace UnitTests
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
-            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
 
         [TestMethod]
@@ -325,7 +279,29 @@ namespace UnitTests
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
-            Assert.IsTrue(result.GetLocalCoord() == new Vector3(0.8f, 0.8f, 0f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
+        }
+
+        [TestMethod]
+        public void UnityQuadMoveTest0()
+        {
+            var quad = new SimpleMesh(
+                new[] {
+                    new Vector3(-0.5f, -0.5f, 0f),
+                    new Vector3(0.5f, 0.5f, 0),
+                    new Vector3(0.5f, -0.5f, 0),
+                    new Vector3(-0.5f, 0.5f, 0)
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 0, 3 //Second triangle
+                });
+
+            var coord = new SurfaceCoord(quad, 0, new Vector2(0f, -0.4f));
+            quad.TriangleSurfaceCoord(0, new Vector3(0f, -0.4f, 0f));
+
+            var result = coord.Move(new Vector2(0f, 0.8f));
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
     }
 }
