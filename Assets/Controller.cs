@@ -16,7 +16,7 @@ namespace Assets
             var cube = GameObject.FindGameObjectWithTag("Level");
             var viewedModel = (MeshFilter)cube.GetComponent(typeof(MeshFilter));
 
-            var coord = new SurfaceCoord(new SimpleMesh(viewedModel.mesh), 0, new Vector2(0.2123f, 0.25123f));
+            var coord = new SurfaceCoord(new SimpleMesh(viewedModel.mesh), 0, new Vector2(0.2123f, 0.45123f));
 
             player = new Player
             {

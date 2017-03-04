@@ -50,5 +50,20 @@ namespace Assets
             }
             return Side.Right;
         }
+
+        /// <summary>
+        /// Returns the T value of the nearest point on this line to a vector.
+        /// </summary>
+        /// <returns></returns>
+        public float NearestT(Vector2 v, bool isSegment)
+        {
+            Vector2 vDelta = _vertices[1] - _vertices[0];
+            double t = ((v.x - _vertices[0].x) * vDelta.x + (v.y - _vertices[0].y) * vDelta.y) / (Math.Pow(vDelta.x, 2) + Math.Pow(vDelta.y, 2));
+            if (isSegment)
+            {
+                t = Math.Min(Math.Max(t, 0), 1);
+            }
+            return (float)t;
+        }
     }
 }

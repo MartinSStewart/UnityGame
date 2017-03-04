@@ -158,5 +158,63 @@ namespace Assets
             }
             return polygon;
         }
+
+        /// <summary>
+        /// Get incenter of a given triangle. The incenter defined as the intersection point of 3 edges that are angle bisectors of the triangle vertices.
+        /// </summary>
+        /// <param name="triangle"></param>
+        /// <returns></returns>
+        public static Vector2 GetTriangleIncenter(Vector2[] triangle)
+        {
+            Debug.Assert(triangle.Length == 3);
+            var edgeLength = new[]
+            {
+                (triangle[2] - triangle[1]).magnitude,
+                (triangle[0] - triangle[2]).magnitude,
+                (triangle[1] - triangle[0]).magnitude
+            };
+            return (edgeLength[0] * triangle[0] + edgeLength[1] * triangle[1] + edgeLength[2] * triangle[2]) / edgeLength.Sum();
+        }
+
+        /// <summary>
+        /// Find the nearest PolygonCoord on the polygon relative to provided point.
+        /// </summary>
+        public static PolygonCoord PointPolygonNearest(IList<Vector2> polygon, Vector2 point)
+        {
+            var nearest = new PolygonCoord(0, 0);
+            double distanceMin = -1;
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                int iNext = (i + 1) % polygon.Count;
+                var edge = new LineF(polygon[i], polygon[iNext]);
+                double distance = PointLineDistance(point, edge, true);
+                if (distanceMin == -1 || distance < distanceMin)
+                {
+                    nearest = new PolygonCoord(i, edge.NearestT(point, true));
+                    distanceMin = distance;
+                }
+            }
+            return nearest;
+        }
+
+        public static double PointLineDistance(Vector2 point, LineF line, bool isSegment)
+        {
+            Vector2 v;
+            Vector2 vDelta = line[1] - line[0];
+            if (vDelta.x == 0 && vDelta.y == 0)
+            {
+                v = line[0];
+            }
+            else
+            {
+                double t = ((point.x - line[0].x) * vDelta.x + (point.y - line[0].y) * vDelta.y) / (Math.Pow(vDelta.x, 2) + Math.Pow(vDelta.y, 2));
+                Debug.Assert(double.IsNaN(t) == false);
+                if (isSegment) { t = Math.Min(Math.Max(t, 0), 1); }
+                v = line[0] + vDelta * (float)t;
+            }
+            double distance = (point - v).magnitude;
+            Debug.Assert(distance >= 0);
+            return distance;
+        }
     }
 }

@@ -10,7 +10,6 @@ namespace Assets
     {
         public readonly SimpleMesh Mesh;
         public readonly int TriangleIndex;
-        public readonly int EdgePrevious;
         public readonly Vector2 Coord;
         public readonly float Rotation;
         public readonly bool FrontSide;
@@ -22,15 +21,13 @@ namespace Assets
             int triangleIndex, 
             Vector2 coord = new Vector2(), 
             float rotation = 0, 
-            bool frontSide = true, 
-            int edgePrevious = 0)
+            bool frontSide = true)
         {
             Mesh = mesh;
             TriangleIndex = triangleIndex;
             Rotation = rotation;
             Coord = coord;
             FrontSide = frontSide;
-            EdgePrevious = edgePrevious;
         }
 
         /// <summary>
@@ -122,6 +119,23 @@ namespace Assets
             return _move(v);
         }
 
+        SurfaceCoord AdjustCoord()
+        {
+            var triangle = GetSurfaceTriangle();
+            Vector2 incenter = MathExt.GetTriangleIncenter(triangle);
+            float scaleFactor = 0.99f;
+            var triangleScaled = triangle.Select(item => (item - incenter) * scaleFactor + incenter).ToArray();
+            if (!MathExt.PointInPolygon(Coord, triangleScaled))
+            {
+                var nearest = MathExt.PointPolygonNearest(triangleScaled, Coord);
+
+                LineF edge = new LineF(triangle[nearest.EdgeIndex], triangle[(nearest.EdgeIndex + 1) % triangleScaled.Length]);
+                Vector2 adjustedCoord = edge.Lerp(nearest.EdgeT);
+                return new SurfaceCoord(Mesh, TriangleIndex, adjustedCoord, Rotation, FrontSide);
+            }
+            return this;
+        }
+
         SurfaceCoord _move(Vector2 v)
         {
             if (v.magnitude == 0)
@@ -140,8 +154,8 @@ namespace Assets
                 LineF edge = new LineF(surfaceTriangle[i], surfaceTriangle[iNext]);
                 var intersection = MathExt.LineLineIntersect(movement, edge, true);
 
-                Side sideOfLine = edge.GetSideOf(Coord + v, false);
-                if (intersection != null && (clockwise == (sideOfLine == Side.Left) || sideOfLine == Side.Neither))
+                //Side sideOfLine = edge.GetSideOf(Coord + v, false);
+                if (intersection != null)// && (clockwise == (sideOfLine == Side.Left) || sideOfLine == Side.Neither))
                 {
                     nearest = intersection;
                     nearestEdge = i;
@@ -155,7 +169,7 @@ namespace Assets
                 int? triangleIndexNext = Mesh.GetAdjacentTriangle(TriangleIndex, (int)nearestEdge);
                 if (triangleIndexNext == null)
                 {
-                    return new SurfaceCoord(Mesh, TriangleIndex, nearest.Position, Rotation, FrontSide, EdgePrevious);
+                    return new SurfaceCoord(Mesh, TriangleIndex, nearest.Position, Rotation, FrontSide).AdjustCoord();
                 }
                 else
                 {
@@ -163,11 +177,7 @@ namespace Assets
                     LineF commonEdge = new LineF(triangle[(int)nearestEdge], triangle[((int)nearestEdge + 1) % SidesOnTriangle]);
                     var surfaceCoord = new SurfaceCoord(Mesh, (int)triangleIndexNext)
                         .GetSurfaceCoord(commonEdge.Lerp(nearest.Last));
-                    var coord = new SurfaceCoord(
-                        Mesh,
-                        (int)triangleIndexNext,
-                        surfaceCoord, 
-                        Rotation);
+                    
 
                     var surfaceTriangleNext = new SurfaceCoord(Mesh, (int)triangleIndexNext).GetSurfaceTriangle();
                     TriangleEdge edgeIndexNext = Mesh.GetAdjacentEdge(TriangleIndex, (int)nearestEdge);
@@ -186,15 +196,19 @@ namespace Assets
                         Vector2 normal = edgeNext.Delta; //new Vector2(-edgeNext.Delta.y, edgeNext.Delta.x);
                         vNext = vNext.Mirror(normal);
                     }
-                    
-                    var coordNext = new SurfaceCoord(coord.Mesh, coord.TriangleIndex, coord.Coord, coord.Rotation + rotationOffset, FrontSide, edgeIndexNext.GetLeadingIndex());
-                    return coordNext._move(vNext);
+
+                    return new SurfaceCoord(Mesh, (int)triangleIndexNext, surfaceCoord, Rotation + rotationOffset).AdjustCoord()._move(vNext);
                 }
             }
             else
             {
-                return new SurfaceCoord(Mesh, TriangleIndex, Coord + v, Rotation, FrontSide, EdgePrevious);
+                return new SurfaceCoord(Mesh, TriangleIndex, Coord + v, Rotation, FrontSide).AdjustCoord();
             }
+        }
+
+        public SurfaceCoord Rotate(float rotation)
+        {
+            return new SurfaceCoord(Mesh, TriangleIndex, Coord, Rotation + rotation, FrontSide);
         }
 
         public Vector2 GetSurfaceCoord(Vector3 coord)
