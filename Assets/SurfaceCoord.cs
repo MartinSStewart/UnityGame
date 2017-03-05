@@ -34,18 +34,7 @@ namespace Assets
         /// <returns></returns>
         public Vector3 GetLocalCoord()
         {
-            return GetLocalCoord(Coord);
-        }
-
-        /// <summary>
-        /// Return the coord relative to the parent mesh.
-        /// </summary>
-        /// <returns></returns>
-        public Vector3 GetLocalCoord(Vector2 local)
-        {
-            var axis = Mesh.TriangleXYAxis(TriangleIndex);
-
-            return Mesh.TriangleLocalOrigin(TriangleIndex) + axis[0] * local.x + axis[1] * local.y;
+            return Mesh.GetLocalCoord(TriangleIndex, Coord);
         }
 
         /// <summary>

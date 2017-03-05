@@ -216,5 +216,30 @@ namespace Assets
             Debug.Assert(distance >= 0);
             return distance;
         }
+
+        /// <summary>
+        /// Instantiates a vector using a direction (in degrees) and a length.
+        /// </summary>
+        /// <param name="degrees"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static Vector2 VectorFromAngle(double degrees, double length)
+        {
+            double radians = degrees * Mathf.Deg2Rad;
+            return new Vector2((float)(-Math.Cos(radians) * length), (float)(Math.Sin(radians) * length));
+        }
+
+        public static double AngleVector(Vector2 v0)
+        {
+            Debug.Assert(v0 != Vector2.zero, "Vector must have non-zero length.");
+            double val = Math.Atan2(v0.x, v0.y);
+
+            if (double.IsNaN(val))
+            {
+                return 0;
+            }
+            double radians = (val + 2 * Math.PI) % (2 * Math.PI) - Math.PI / 2;
+            return radians * Mathf.Rad2Deg;
+        }
     }
 }

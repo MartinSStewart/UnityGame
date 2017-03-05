@@ -297,11 +297,17 @@ namespace UnitTests
                     1, 0, 3 //Second triangle
                 });
 
-            var coord = new SurfaceCoord(quad, 0, new Vector2(0f, -0.4f));
-            quad.TriangleSurfaceCoord(0, new Vector3(0f, -0.4f, 0f));
+            var coord = new SurfaceCoord(quad, 0, quad.TriangleSurfaceCoord(0, new Vector3(0f, -0.4f, 0f)));
 
-            var result = coord.Move(new Vector2(0f, 0.8f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
+            Vector2 v0 = quad.GetLocalCoord(coord.TriangleIndex, coord.Coord);
+            Vector2 v1 = quad.GetLocalCoord(coord.TriangleIndex, coord.Coord + MathExt.VectorFromAngle(coord.Rotation, 1));
+
+            Vector2 movement = (quad.TriangleSurfaceCoord(0, new Vector3(0f, -0.3f, 0f)) - coord.Coord) * 8;
+            var result = coord.Move(movement);
+            Vector2 v2 = quad.GetLocalCoord(result.TriangleIndex, result.Coord);
+            Vector2 v3 = quad.GetLocalCoord(result.TriangleIndex, result.Coord + MathExt.VectorFromAngle(result.Rotation, 1));
+            Assert.AreEqual(MathExt.AngleVector(v3 - v2), MathExt.AngleVector(v1 - v0), 0.001);
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0f, 0.4f, 0f)).magnitude < 0.001f);
         }
     }
 }

@@ -33,16 +33,16 @@ namespace Assets
         {
             if (Input.GetKey(KeyCode.W))
             {
-                player.Position = player.Position.Move(new Vector2((float)(-Math.Cos(player.Position.Rotation) * 0.01f), (float)(Math.Sin(player.Position.Rotation) * 0.01f)));
+                player.Position = player.Position.Move(MathExt.VectorFromAngle(player.Position.Rotation, 0.01));
             }
             var pos = player.Position;
             if (Input.GetKey(KeyCode.A))
             {
-                player.Position = new SurfaceCoord(pos.Mesh, pos.TriangleIndex, pos.Coord, pos.Rotation - 0.1f, pos.FrontSide);
+                player.Position = player.Position.Rotate(-2f);//new SurfaceCoord(pos.Mesh, pos.TriangleIndex, pos.Coord, pos.Rotation - 0.1f, pos.FrontSide);
             }
             else if (Input.GetKey(KeyCode.D))
             {
-                player.Position = new SurfaceCoord(pos.Mesh, pos.TriangleIndex, pos.Coord, pos.Rotation + 0.1f, pos.FrontSide);
+                player.Position = player.Position.Rotate(2f); //new SurfaceCoord(pos.Mesh, pos.TriangleIndex, pos.Coord, pos.Rotation + 0.1f, pos.FrontSide);
             }
 
             var playerModel = GameObject.FindGameObjectWithTag("Player");
