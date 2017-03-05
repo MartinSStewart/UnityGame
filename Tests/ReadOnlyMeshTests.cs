@@ -11,22 +11,22 @@ using UnitTests;
 namespace Tests
 {
     [TestClass]
-    public class SimpleMeshTests
+    public class ReadOnlyMeshTests
     {
-        public SimpleMesh GetRandomTriangle(System.Random rand)
+        public ReadonlyMesh GetRandomTriangle(System.Random rand)
         {
             Vector3[] vertices = new Vector3[3];
             for (int i = 0; i < vertices.Length; i++)
             {
                 vertices[i] = new Vector3((float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500);
             }
-            return new SimpleMesh(vertices, new[] { 0, 1, 2 });
+            return new ReadonlyMesh(vertices, new[] { 0, 1, 2 });
         }
 
         [TestMethod]
         public void SimpleMeshTest0()
         {
-            SimpleMesh mesh = new SimpleMesh(
+            ReadonlyMesh mesh = new ReadonlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(1, 0),

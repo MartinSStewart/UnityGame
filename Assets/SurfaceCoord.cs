@@ -8,14 +8,14 @@ namespace Assets
 {
     public class SurfaceCoord
     {
-        public readonly SimpleMesh Mesh;
+        public readonly ReadonlyMesh Mesh;
         public readonly int TriangleIndex;
         public readonly Vector2 Coord;
         public readonly float Rotation;
         public readonly bool FrontSide;
 
         public SurfaceCoord(
-            SimpleMesh mesh, 
+            ReadonlyMesh mesh, 
             int triangleIndex, 
             Vector2 coord = new Vector2(), 
             float rotation = 0, 

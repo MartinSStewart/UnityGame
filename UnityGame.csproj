@@ -86,7 +86,7 @@
     <Compile Include="Assets\Player.cs" />
     <Compile Include="Assets\PolygonCoord.cs" />
     <Compile Include="Assets\Side.cs" />
-    <Compile Include="Assets\SimpleMesh.cs" />
+    <Compile Include="Assets\ReadOnlyMesh.cs" />
     <Compile Include="Assets\SurfaceCoord.cs" />
     <Compile Include="Assets\TriangleEdge.cs" />
     <Compile Include="Assets\Vector2Extension.cs" />

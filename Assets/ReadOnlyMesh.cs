@@ -10,7 +10,7 @@ namespace Assets
     /// Custom mesh implementation used in place of UnityEngine.Mesh to allow for VS unit testing. 
     /// Also supports fast lookup of adjacent triangles.
     /// </summary>
-    public class SimpleMesh
+    public class ReadonlyMesh
     {
         /// <summary>
         /// Indices pointing into the _vertices array. The indices are stored as [triangle index, edge index].
@@ -22,12 +22,12 @@ namespace Assets
         /// </summary>
         readonly int?[,] _adjacentTriangles;
 
-        public SimpleMesh(Mesh mesh)
+        public ReadonlyMesh(Mesh mesh)
             : this(mesh.vertices, mesh.triangles)
         {
         }
 
-        public SimpleMesh(Vector3[] vertices, int[] triangles)
+        public ReadonlyMesh(Vector3[] vertices, int[] triangles)
         {
             Debug.Assert(triangles.Length % Constants.SidesOnTriangle == 0);
 
@@ -44,6 +44,18 @@ namespace Assets
             }
             
             UpdateAdjacentTriangles();
+        }
+
+        /// <summary>
+        /// Returns copies of vertices to iterate through.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Vector3> GetVertices()
+        {
+            foreach (var v in _vertices)
+            {
+                yield return v;
+            }
         }
 
         public void Translate(Vector3 v)
