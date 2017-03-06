@@ -8,14 +8,14 @@ namespace Assets
 {
     public class SurfaceCoord
     {
-        public readonly ReadonlyMesh Mesh;
+        public readonly ReadOnlyMesh Mesh;
         public readonly int TriangleIndex;
         public readonly Vector2 Coord;
         public readonly float Rotation;
         public readonly bool FrontSide;
 
         public SurfaceCoord(
-            ReadonlyMesh mesh, 
+            ReadOnlyMesh mesh, 
             int triangleIndex, 
             Vector2 coord = new Vector2(), 
             float rotation = 0, 
@@ -57,17 +57,12 @@ namespace Assets
         /// <param name="coord0"></param>
         /// <param name="coord1"></param>
         /// <returns></returns>
-        public static bool Equals(SurfaceCoord coord0, SurfaceCoord coord1, float delta)
+        public static bool AlmostEquals(SurfaceCoord coord0, SurfaceCoord coord1, float delta)
         {
             return coord0.Mesh == coord1.Mesh &&
                 (coord0.Coord - coord1.Coord).magnitude <= delta &&
                 coord0.TriangleIndex == coord1.TriangleIndex &&
                 Math.Abs(coord0.Rotation - coord1.Rotation) <= delta;
-        }
-
-        public SurfaceCoord Move(Vector2 v)
-        {
-            return _move(v);
         }
 
         SurfaceCoord AdjustCoord()
@@ -87,7 +82,7 @@ namespace Assets
             return this;
         }
 
-        SurfaceCoord _move(Vector2 v)
+        public SurfaceCoord Move(Vector2 v)
         {
             if (v.magnitude == 0)
             {
@@ -123,10 +118,6 @@ namespace Assets
                 }
                 else
                 {
-                    var triangle = Mesh.GetTriangle(TriangleIndex);
-                    LineF commonEdge = new LineF(triangle[(int)nearestEdge], triangle[((int)nearestEdge + 1) % Constants.SidesOnTriangle]);
-                    
-
                     var surfaceTriangleNext = Mesh.GetSurfaceTriangle((int)triangleIndexNext);
                     TriangleEdge edgeIndexNext = Mesh.GetAdjacentEdge(TriangleIndex, (int)nearestEdge);
                     LineF edge = new LineF(surfaceTriangle[(int)nearestEdge], surfaceTriangle[(int)(nearestEdge + 1) % Constants.SidesOnTriangle]);
@@ -138,18 +129,27 @@ namespace Assets
                     float rotationOffset = -Vector2.Angle(edge.Delta, edgeNext.Delta);
                     rotationOffset = (float)MathExt.ValueWrap(rotationOffset, 360);
                     Vector2 vNext = edgeNext.Delta.normalized.Rotate(angle0) * movementLeft;
-                    //if (MathExt.IsClockwise(surfaceTriangleNext) != MathExt.IsClockwise(surfaceTriangle))
+
+                    Vector2 coordNext;
                     if ((edgeIndexNext.StartIndex + 1) % Constants.SidesOnTriangle == edgeIndexNext.EndIndex)
                     {
-                        Vector2 normal = edgeNext.Delta; //new Vector2(-edgeNext.Delta.y, edgeNext.Delta.x);
+                        Vector2 normal = edgeNext.Delta;
                         vNext = vNext.Mirror(normal);
+
+                        coordNext = edgeNext.Lerp(nearest.Last);
+                    }
+                    else
+                    {
+                        coordNext = edgeNext.Lerp(nearest.Last);
                     }
 
-                    return new SurfaceCoord(
-                        Mesh, 
-                        (int)triangleIndexNext, 
-                        Mesh.TriangleSurfaceCoord((int)triangleIndexNext, commonEdge.Lerp(nearest.Last)), 
-                        Rotation + rotationOffset).AdjustCoord()._move(vNext);
+                    Debug.Assert(
+                        (Mesh.GetLocalCoord((int)triangleIndexNext, coordNext) - Mesh.GetLocalCoord(TriangleIndex, nearest.Position)).magnitude < 0.0001f, 
+                        "There shouldn't be a jump in position when moving between triangle edges.");
+
+                    return new SurfaceCoord(Mesh, (int)triangleIndexNext, coordNext, Rotation + rotationOffset)
+                        .AdjustCoord()
+                        .Move(vNext);
                 }
             }
             else

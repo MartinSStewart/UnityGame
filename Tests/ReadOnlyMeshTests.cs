@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets;
-using UnityEngine;
 using UnitTests;
 
 namespace Tests
@@ -13,20 +12,20 @@ namespace Tests
     [TestClass]
     public class ReadOnlyMeshTests
     {
-        public ReadonlyMesh GetRandomTriangle(System.Random rand)
+        public ReadOnlyMesh GetRandomTriangle(System.Random rand)
         {
-            Vector3[] vertices = new Vector3[3];
+            Vector3[] vertices = new Vector3[3]; 
             for (int i = 0; i < vertices.Length; i++)
             {
                 vertices[i] = new Vector3((float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500, (float)rand.NextDouble() * 1000 - 500);
             }
-            return new ReadonlyMesh(vertices, new[] { 0, 1, 2 });
+            return new ReadOnlyMesh(vertices, new[] { 0, 1, 2 });
         }
 
         [TestMethod]
         public void SimpleMeshTest0()
         {
-            ReadonlyMesh mesh = new ReadonlyMesh(
+            ReadOnlyMesh mesh = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(1, 0),

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
 
 namespace Assets
 {
@@ -10,7 +9,7 @@ namespace Assets
     /// Custom mesh implementation used in place of UnityEngine.Mesh to allow for VS unit testing. 
     /// Also supports fast lookup of adjacent triangles.
     /// </summary>
-    public class ReadonlyMesh
+    public class ReadOnlyMesh
     {
         /// <summary>
         /// Indices pointing into the _vertices array. The indices are stored as [triangle index, edge index].
@@ -22,12 +21,12 @@ namespace Assets
         /// </summary>
         readonly int?[,] _adjacentTriangles;
 
-        public ReadonlyMesh(Mesh mesh)
-            : this(mesh.vertices, mesh.triangles)
+        public ReadOnlyMesh(UnityEngine.Mesh mesh)
+            : this(mesh.vertices.Select(item => new Vector3(item)).ToArray(), mesh.triangles)
         {
         }
 
-        public ReadonlyMesh(Vector3[] vertices, int[] triangles)
+        public ReadOnlyMesh(Vector3[] vertices, int[] triangles)
         {
             Debug.Assert(triangles.Length % Constants.SidesOnTriangle == 0);
 
@@ -234,7 +233,6 @@ namespace Assets
         public Vector3 GetLocalCoord(int triangleIndex, Vector2 local)
         {
             var axis = TriangleXYAxis(triangleIndex);
-
             return TriangleLocalOrigin(triangleIndex) + axis[0] * local.x + axis[1] * local.y;
         }
     }

@@ -16,7 +16,7 @@ namespace Assets
             var cube = GameObject.FindGameObjectWithTag("Level");
             var viewedModel = (MeshFilter)cube.GetComponent(typeof(MeshFilter));
 
-            var coord = new SurfaceCoord(new ReadonlyMesh(viewedModel.mesh), 0, new Vector2(0.2123f, 0.45123f));
+            var coord = new SurfaceCoord(new ReadOnlyMesh(viewedModel.mesh), 0, new Vector2(0.2123f, 0.45123f));
 
             player = new Player
             {
@@ -25,7 +25,7 @@ namespace Assets
 
             var playerModel = GameObject.FindGameObjectWithTag("Player");
             playerModel.transform.SetParent(viewedModel.transform);
-            playerModel.transform.localPosition = new Vector3();
+            playerModel.transform.localPosition = new UnityEngine.Vector3();
             //player.transform.position = coord.GetWorldCoord();
         }
 
@@ -46,8 +46,8 @@ namespace Assets
             }
 
             var playerModel = GameObject.FindGameObjectWithTag("Player");
-            playerModel.transform.position = new Vector3();
-            playerModel.transform.localPosition = player.Position.GetLocalCoord();
+            playerModel.transform.position = new UnityEngine.Vector3();
+            playerModel.transform.localPosition = player.Position.GetLocalCoord().ToUnity();
         }
     }
 }

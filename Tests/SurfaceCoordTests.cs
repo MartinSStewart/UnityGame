@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Assets;
-using UnityEngine;
 using System.Linq;
 
 namespace UnitTests
@@ -9,9 +8,9 @@ namespace UnitTests
     [TestClass]
     public class SurfaceCoordTests
     {
-        public ReadonlyMesh GetAxisAlignedTriangle()
+        public ReadOnlyMesh GetAxisAlignedTriangle()
         {
-            return new ReadonlyMesh(new[]
+            return new ReadOnlyMesh(new[]
                 {
                     new Vector3(),
                     new Vector3(0, 1, 0),
@@ -58,7 +57,7 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest4()
         {
-            ReadonlyMesh triangle = GetAxisAlignedTriangle();
+            ReadOnlyMesh triangle = GetAxisAlignedTriangle();
             Vector3 offset = new Vector3(5f, 4f, 2f);
             triangle.Translate(offset);
             var coord = new SurfaceCoord(triangle, 0, new Vector2(0.2f, 0.6f));
@@ -74,7 +73,7 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest5()
         {
-            ReadonlyMesh triangle = GetAxisAlignedTriangle();
+            ReadOnlyMesh triangle = GetAxisAlignedTriangle();
             float scale = 3;
             triangle.Scale(scale);
             var coord = new SurfaceCoord(triangle, 0, new Vector2(0.2f, 0.6f));
@@ -87,7 +86,7 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest6()
         {
-            ReadonlyMesh triangle = GetAxisAlignedTriangle();
+            ReadOnlyMesh triangle = GetAxisAlignedTriangle();
             float scale = 3;
             triangle.Scale(scale);
             Vector3 offset = new Vector3(5f, 4f, 2f);
@@ -105,7 +104,7 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest7()
         {
-            ReadonlyMesh triangle = new ReadonlyMesh(
+            ReadOnlyMesh triangle = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(0, 0, 1),
@@ -126,7 +125,7 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest8()
         {
-            ReadonlyMesh triangle = new ReadonlyMesh(
+            ReadOnlyMesh triangle = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(0, 0, 1),
@@ -147,7 +146,7 @@ namespace UnitTests
         [TestMethod]
         public void GetWorldCoordTest9()
         {
-            ReadonlyMesh triangle = new ReadonlyMesh(
+            ReadOnlyMesh triangle = new ReadOnlyMesh(
                 new[]
                 {
                     new Vector3(),
@@ -163,9 +162,9 @@ namespace UnitTests
             Assert.IsTrue(result == expected);
         }
 
-        public ReadonlyMesh GetAxisAlignedQuad()
+        public ReadOnlyMesh GetAxisAlignedQuad()
         {
-            return new ReadonlyMesh(
+            return new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(0, 1, 0),
@@ -187,7 +186,7 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0f, -1f));
             var expected = new SurfaceCoord(triangle, 0, new Vector2(0.1f, 0f));
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
             Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).magnitude < 0.001f);
         }
 
@@ -200,7 +199,7 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
             Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
 
@@ -209,18 +208,13 @@ namespace UnitTests
         {
             var quad = GetAxisAlignedQuad();
 
-            var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
-
-            var result = coord.Move(new Vector2(0f, 0.85f));
-            var expected = new SurfaceCoord(quad, 1, new Vector2(0.05f, 0.1f), 270);
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0.95f, 0f)).magnitude < 0.001f);
+            AssertOnFlatMesh(quad, 0, new Vector2(0.1f, 0.1f), new Vector2(0f, 0.85f));
         }
 
         [TestMethod]
         public void MoveTest3()
         {
-            var quad = new ReadonlyMesh(
+            var quad = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(0, 1, 0),
@@ -236,14 +230,14 @@ namespace UnitTests
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
-            Assert.IsTrue(SurfaceCoord.Equals(result, expected, 0.001f));
+            Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
             Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
 
         [TestMethod]
         public void MoveTest4()
         {
-            var quad = new ReadonlyMesh(
+            var quad = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(0, 1, 0),
@@ -264,7 +258,7 @@ namespace UnitTests
         [TestMethod]
         public void MoveTest5()
         {
-            var quad = new ReadonlyMesh(
+            var quad = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
                     new Vector3(0, 1, 0),
@@ -282,10 +276,13 @@ namespace UnitTests
             Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
         }
 
+        /// <summary>
+        /// Verify that SurfaceCoord movement works correctly on the default quad in Unity.
+        /// </summary>
         [TestMethod]
         public void UnityQuadMoveTest0()
         {
-            var quad = new ReadonlyMesh(
+            var quad = new ReadOnlyMesh(
                 new[] {
                     new Vector3(-0.5f, -0.5f, 0f),
                     new Vector3(0.5f, 0.5f, 0),
@@ -300,22 +297,129 @@ namespace UnitTests
             AssertOnFlatMesh(quad, 0, new Vector2(0f, -0.4f), new Vector2(0f, 0.8f));
         }
 
-        void AssertOnFlatMesh(ReadonlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
+        [TestMethod]
+        public void UnityQuadMoveTest1()
+        {
+            var quad = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(-0.5f, -0.5f, 0f),
+                    new Vector3(0.5f, 0.5f, 0),
+                    new Vector3(0.5f, -0.5f, 0),
+                    new Vector3(-0.5f, 0.5f, 0)
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 0, 3 //Second triangle
+                });
+
+            AssertOnFlatMesh(quad, 0, new Vector2(0.2f, -0.4f), new Vector2(-0.1f, 0.8f));
+        }
+
+        [TestMethod]
+        public void MoveOnBentQuadTest0()
+        {
+            var quad = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(-0.5f, -0.5f, 0f),
+                    new Vector3(0.5f, 0.5f, 0),
+                    new Vector3(0.5f, -0.5f, 0),
+                    new Vector3(-0.5f, 0.5f, 0)
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 0, 3 //Second triangle
+                });
+
+            var quadBent = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(-0.5f, -0.5f, 0f),
+                    new Vector3(0.5f, 0.5f, 0),
+                    new Vector3(0.5f, -0.5f, 0),
+                    new Vector3(0f, 0f, (float)(0.5 * Math.Sqrt(2)))
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 0, 3 //Second triangle
+                });
+
+            AssertOnBentMesh(quad, quadBent, 0, new Vector2(0f, -0.4f), new Vector2(0f, 0.8f));
+        }
+
+        [TestMethod]
+        public void MoveOnBentQuadTest1()
+        {
+            var quad = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(-0.5f, -0.5f, 0f),
+                    new Vector3(0.5f, 0.5f, 0),
+                    new Vector3(0.5f, -0.5f, 0),
+                    new Vector3(-0.5f, 0.5f, 0)
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 0, 3 //Second triangle
+                });
+
+            var quadBent = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(-0.5f, -0.5f, 0f),
+                    new Vector3(0.5f, 0.5f, 0),
+                    new Vector3(0.5f, -0.5f, 0),
+                    new Vector3(0f, 0f, (float)(0.5 * Math.Sqrt(2)))
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 0, 3 //Second triangle
+                });
+
+            AssertOnBentMesh(quad, quadBent, 0, new Vector2(0.2f, -0.4f), new Vector2(-0.1f, 0.8f));
+        }
+
+        void AssertOnFlatMesh(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
         {
             Assets.Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
 
-            var start = new SurfaceCoord(mesh, triangleIndex, mesh.TriangleSurfaceCoord(triangleIndex, startPoint));
+            var start = new SurfaceCoord(mesh, triangleIndex, mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)startPoint));
 
-            Vector2 v0 = mesh.GetLocalCoord(triangleIndex, start.Coord);
-            Vector2 v1 = mesh.GetLocalCoord(triangleIndex, start.Coord + MathExt.VectorFromAngle(start.Rotation, 1));
+            Vector2 v0 = (Vector2)mesh.GetLocalCoord(triangleIndex, start.Coord);
+            Vector2 v1 = (Vector2)mesh.GetLocalCoord(triangleIndex, start.Coord + MathExt.VectorFromAngle(start.Rotation, 1));
 
-            Vector2 localMove = mesh.TriangleSurfaceCoord(triangleIndex, movement + startPoint) - start.Coord;
+            Vector2 localMove = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
             var result = start.Move(localMove);
-            Vector2 v2 = mesh.GetLocalCoord(result.TriangleIndex, result.Coord);
-            Vector2 v3 = mesh.GetLocalCoord(result.TriangleIndex, result.Coord + MathExt.VectorFromAngle(result.Rotation, 1));
+            Vector2 v2 = (Vector2)mesh.GetLocalCoord(result.TriangleIndex, result.Coord);
+            Vector2 v3 = (Vector2)mesh.GetLocalCoord(result.TriangleIndex, result.Coord + MathExt.VectorFromAngle(result.Rotation, 1));
 
             Assert.AreEqual(MathExt.AngleVector(v3 - v2), MathExt.AngleVector(v1 - v0), 0.001);
             Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).magnitude < 0.001f);
+        }
+
+        /// <summary>
+        /// Assert that the movement on a flat mesh matches its bent counterpart.
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="meshBent"></param>
+        /// <param name="triangleIndex"></param>
+        /// <param name="startPoint"></param>
+        /// <param name="movement"></param>
+        void AssertOnBentMesh(ReadOnlyMesh mesh, ReadOnlyMesh meshBent, int triangleIndex, Vector2 startPoint, Vector2 movement)
+        {
+            Assets.Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
+
+            var start = new SurfaceCoord(mesh, triangleIndex, mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)startPoint));
+
+            Vector2 v0 = (Vector2)mesh.GetLocalCoord(triangleIndex, start.Coord);
+            Vector2 v1 = (Vector2)mesh.GetLocalCoord(triangleIndex, start.Coord + MathExt.VectorFromAngle(start.Rotation, 1));
+
+            Vector2 localMove = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
+            var result = start.Move(localMove);
+            Vector2 v2 = (Vector2)mesh.GetLocalCoord(result.TriangleIndex, result.Coord);
+            Vector2 v3 = (Vector2)mesh.GetLocalCoord(result.TriangleIndex, result.Coord + MathExt.VectorFromAngle(result.Rotation, 1));
+
+            var startBent = new SurfaceCoord(meshBent, triangleIndex, start.Coord);
+            var resultBent = startBent.Move(localMove);
+
+            Assert.IsTrue((result.Coord - resultBent.Coord).magnitude < 0.001f);
+            Assert.IsTrue(Math.Abs(result.Rotation - resultBent.Rotation) < 0.001f);
         }
     }
 }

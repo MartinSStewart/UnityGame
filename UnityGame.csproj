@@ -89,7 +89,9 @@
     <Compile Include="Assets\ReadOnlyMesh.cs" />
     <Compile Include="Assets\SurfaceCoord.cs" />
     <Compile Include="Assets\TriangleEdge.cs" />
+    <Compile Include="Assets\Vector2.cs" />
     <Compile Include="Assets\Vector2Extension.cs" />
+    <Compile Include="Assets\Vector3.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
