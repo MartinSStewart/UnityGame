@@ -439,16 +439,21 @@ namespace UnitTests
 
         void AssertOnFlatMesh(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
         {
-            Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
-            Vector2 surfaceCoord = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)startPoint);
-            Debug.Assert(MathExt.PointInPolygon(surfaceCoord, mesh.GetSurfaceTriangle(triangleIndex)));
-            var start = new SurfaceCoord(mesh, triangleIndex, surfaceCoord);
+            SurfaceCoord start, result;
+            Vector2 localMove;
+            ComputeLocalMovement(mesh, triangleIndex, startPoint, movement, out start, out localMove, out result);
+
+            Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).magnitude < 0.001f);
+        }
+
+        void AssertDirectionOnFlatMesh(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
+        {
+            SurfaceCoord start, result;
+            Vector2 localMove;
+            ComputeLocalMovement(mesh, triangleIndex, startPoint, movement, out start, out localMove, out result);
 
             Vector2 v0 = (Vector2)mesh.TriToMeshCoord(triangleIndex, start.Coord);
             Vector2 v1 = (Vector2)mesh.TriToMeshCoord(triangleIndex, start.Coord + MathExt.VectorFromAngle(start.Rotation, 1));
-
-            Vector2 localMove = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
-            var result = start.Move(localMove);
             Vector2 v2 = (Vector2)mesh.TriToMeshCoord(result.TriangleIndex, result.Coord);
             Vector2 v3 = (Vector2)mesh.TriToMeshCoord(result.TriangleIndex, result.Coord + MathExt.VectorFromAngle(result.Rotation, 1));
 
@@ -468,18 +473,9 @@ namespace UnitTests
         /// <param name="movement"></param>
         void AssertOnBentMesh(ReadOnlyMesh mesh, ReadOnlyMesh meshBent, int triangleIndex, Vector2 startPoint, Vector2 movement)
         {
-            Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
-            Vector2 surfaceCoord = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)startPoint);
-            Debug.Assert(MathExt.PointInPolygon(surfaceCoord, mesh.GetSurfaceTriangle(triangleIndex)));
-            var start = new SurfaceCoord(mesh, triangleIndex, surfaceCoord);
-
-            Vector2 v0 = (Vector2)mesh.TriToMeshCoord(triangleIndex, start.Coord);
-            Vector2 v1 = (Vector2)mesh.TriToMeshCoord(triangleIndex, start.Coord + MathExt.VectorFromAngle(start.Rotation, 1));
-
-            Vector2 localMove = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
-            var result = start.Move(localMove);
-            Vector2 v2 = (Vector2)mesh.TriToMeshCoord(result.TriangleIndex, result.Coord);
-            Vector2 v3 = (Vector2)mesh.TriToMeshCoord(result.TriangleIndex, result.Coord + MathExt.VectorFromAngle(result.Rotation, 1));
+            SurfaceCoord start, result;
+            Vector2 localMove;
+            ComputeLocalMovement(mesh, triangleIndex, startPoint, movement, out start, out localMove, out result);
 
             var startBent = new SurfaceCoord(meshBent, triangleIndex, start.Coord);
             var resultBent = startBent.Move(localMove);
@@ -488,15 +484,26 @@ namespace UnitTests
             Assert.IsTrue(Math.Abs(result.Rotation - resultBent.Rotation) < 0.001f);
         }
 
+        private static void ComputeLocalMovement(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement, out SurfaceCoord start, out Vector2 localMove, out SurfaceCoord result)
+        {
+            Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
+            Vector2 surfaceCoord = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)startPoint);
+            Debug.Assert(MathExt.PointInPolygon(surfaceCoord, mesh.GetSurfaceTriangle(triangleIndex)));
+            start = new SurfaceCoord(mesh, triangleIndex, surfaceCoord);
+
+            localMove = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
+            result = start.Move(localMove);
+        }
+
         [TestMethod]
         public void MoveTestForRotation0()
         {
             var quad = GetAxisAlignedQuad();
 
-            var coord = new SurfaceCoord(triangle, 0, new Vector2(0.1f, 0.1f));
+            var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
             var result = coord.Move(new Vector2(0f, -1f));
-            var expected = new SurfaceCoord(triangle, 0, new Vector2(0.1f, 0f));
+            var expected = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0f));
             Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
             Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).magnitude < 0.001f);
         }

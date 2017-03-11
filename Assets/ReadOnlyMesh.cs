@@ -16,6 +16,7 @@ namespace Assets
         /// </summary>
         readonly int[,] _triangles;
         readonly Vector3[] _vertices;
+        public int TriangleCount { get { return _triangles.GetLength(0); } }
         /// <summary>
         /// Lookup table for finding neighboring triangles. The data is stored as [triangle index, edge index].
         /// </summary>
@@ -31,10 +32,10 @@ namespace Assets
             Debug.Assert(triangles.Length % Constants.SidesOnTriangle == 0);
 
             _triangles = new int[triangles.Length / Constants.SidesOnTriangle, Constants.SidesOnTriangle];
-            _adjacentTriangles = new int?[_triangles.GetLength(0), Constants.SidesOnTriangle];
+            _adjacentTriangles = new int?[TriangleCount, Constants.SidesOnTriangle];
             _vertices = vertices.ToArray();
 
-            for (int i = 0; i < _triangles.GetLength(0); i++)
+            for (int i = 0; i < TriangleCount; i++)
             {
                 int index = i * Constants.SidesOnTriangle;
                 _triangles[i, 0] = triangles[index];
@@ -112,6 +113,16 @@ namespace Assets
             return _adjacentTriangles[triangleIndex, edgeIndex];
         }
 
+        public int?[] GetAdjacentTriangles(int triangleIndex)
+        {
+            return new[]
+            {
+                GetAdjacentTriangle(triangleIndex, 0),
+                GetAdjacentTriangle(triangleIndex, 1),
+                GetAdjacentTriangle(triangleIndex, 2)
+            };
+        }
+
         int? CalculateAdjacentTriangle(int triangleIndex, int edgeIndex)
         {
             Debug.Assert(edgeIndex >= 0 && edgeIndex < Constants.SidesOnTriangle);
@@ -147,8 +158,19 @@ namespace Assets
             {
                 return null;
             }
-            int adjacentTriangleIndex = (int)temp;
+            var result = GetCommonEdge(triangleIndex, (int)temp);
+            Debug.Assert(result != null, "Execution should not have reached this point.");
+            return result;
+        }
 
+        /// <summary>
+        /// Returns the common triangle edge for first triangle index (if one exists).
+        /// </summary>
+        /// <param name="triangleIndex"></param>
+        /// <param name="triangleIndexAdjacent"></param>
+        /// <returns></returns>
+        public TriangleEdge GetCommonEdge(int triangleIndex, int adjacentTriangleIndex)
+        {
             for (int i = 0; i < Constants.SidesOnTriangle; i++)
             {
                 for (int j = 0; j < Constants.SidesOnTriangle; j++)
@@ -169,7 +191,6 @@ namespace Assets
                     }
                 }
             }
-            Debug.Assert(true, "Execution should not have reached this point.");
             return null;
         }
 
@@ -235,5 +256,42 @@ namespace Assets
             var axis = TriangleXYAxis(triangleIndex);
             return TriangleLocalOrigin(triangleIndex) + axis[0] * local.x + axis[1] * local.y;
         }
+
+        public bool IsAdjacent(int triangleIndex0, int triangleIndex1)
+        {
+            return GetAdjacentTriangles(triangleIndex0).Contains(triangleIndex1);
+        }
+
+        //public Vector2 TriToAdjacentCoord(int triangleIndex, int edgeIndex)
+        //{
+        //    return TriToAdjacentCoord(triangleIndex, (int)GetAdjacentTriangle(triangleIndex, edgeIndex));
+        //}
+
+        /// <summary>
+        /// Convert from this triangles coordinate system to the coordinate system of an adjacent triangle.
+        /// </summary>
+        /// <param name="triangleIndex"></param>
+        /// <param name="triangleAdjacentIndex"></param>
+        /// <returns></returns>
+        public Vector2 TriToAdjacentCoord(int triangleIndex, int triangleAdjacentIndex)
+        {
+            Debug.Assert(IsAdjacent(triangleIndex, triangleAdjacentIndex));
+            throw new NotImplementedException();
+        }
+
+        //public Vector3 GetPlanarAdjacentTriangle(int triangleIndex, int adjacentTriangleIndex)
+        //{
+        //    Debug.Assert(IsAdjacent(triangleIndex, adjacentTriangleIndex));
+        //    Vector3[] triangle = GetTriangle(triangleIndex);
+        //    Vector3 farPoint = GetTriangle(adjacentTriangleIndex).First(item => !triangle.Contains(item));
+
+        //    var commonEdge = GetCommonEdge(triangleIndex, adjacentTriangleIndex).Indices.Select(item => _vertices[item]);
+        //    var distances = commonEdge.Select(item => (item - farPoint).magnitude);
+
+        //    var commonEdgeSurface = GetCommonEdge(triangleIndex, adjacentTriangleIndex).Indices.Select(item => _vertices[item]);
+
+        //    MathExt.IntersectionTwoCircles(commonEdge[0], distances[0], common)
+        //    //GetAdjacentEdge(triangleIndex, )
+        //}
     }
 }

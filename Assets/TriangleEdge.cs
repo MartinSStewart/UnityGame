@@ -8,6 +8,10 @@ namespace Assets
     public class TriangleEdge
     {
         public readonly int StartIndex, EndIndex;
+        /// <summary>
+        /// Get the start and end index as an array.
+        /// </summary>
+        public int[] Indices { get { return new[] { StartIndex, EndIndex }; } }
 
         public TriangleEdge(int startIndex, int endIndex)
         {

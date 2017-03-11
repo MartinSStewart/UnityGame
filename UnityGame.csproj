@@ -83,6 +83,7 @@
     <Compile Include="Assets\LineF.cs" />
     <Compile Include="Assets\Logic.cs" />
     <Compile Include="Assets\MathExt.cs" />
+    <Compile Include="Assets\PathFinding.cs" />
     <Compile Include="Assets\Player.cs" />
     <Compile Include="Assets\PolygonCoord.cs" />
     <Compile Include="Assets\Side.cs" />

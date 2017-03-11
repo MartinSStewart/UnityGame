@@ -241,5 +241,35 @@ namespace Assets
             double radians = (val + 2 * Math.PI) % (2 * Math.PI) - Math.PI / 2;
             return radians * Mathf.Rad2Deg;
         }
+
+        public static Vector2[] IntersectionTwoCircles(Vector2 center0, double radius0, Vector2 center1, double radius1)
+        {
+            /* error handling is missing complettely - left as an exercise 
+
+                  A1
+                 /| \
+             r1 / |  \ r2
+               /  |   \
+              /   |h   \
+             /g1  |     \          (g1 means angle gamma1)
+            C1----P-----C2
+               d1   d2
+            */
+            double dx = center0.x - center1.x;
+            double dy = center0.y - center1.y;
+            double d = Math.Sqrt(dx * dx + dy * dy); // d = |C1-C2|
+            double gamma1 = Math.Acos((radius1 * radius1 + d * d - radius0 * radius0) / (2 * radius1 * d)); // law of cosines
+            double d1 = radius0 * Math.Cos(gamma1); // basic math in right triangle
+            double h = radius0 * Math.Sin(gamma1);
+            double px = center0.x + (center1.x - center0.x) / d * d1;
+            double py = center0.y + (center1.y - center0.y) / d * d1;
+            // (-dy, dx)/d is (C2-C1) normalized and rotated by 90 degrees
+
+            return new[]
+            {
+                new Vector2((float)(px + (-dy) / d * h), (float)(py + (+dx) / d * h)),
+                new Vector2((float)(px - (-dy) / d * h), (float)(py - (+dx) / d * h))
+            };
+        }
     }
 }

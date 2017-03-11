@@ -21,6 +21,7 @@ namespace Assets
             float rotation = 0, 
             bool frontSide = true)
         {
+            Debug.Assert(triangleIndex >= 0 && mesh.TriangleCount > triangleIndex, "TriangleIndex is out of bounds.");
             Mesh = mesh;
             TriangleIndex = triangleIndex;
             Rotation = rotation;
@@ -84,13 +85,14 @@ namespace Assets
 
         public SurfaceCoord Move(Vector2 v)
         {
+            Debug.Assert(MathExt.PointInPolygon(Coord, Mesh.GetSurfaceTriangle(TriangleIndex)), "Coord should never be outside of triangle when calling this method.");
+
             if (v.magnitude == 0)
             {
                 return new SurfaceCoord(Mesh, TriangleIndex, Coord, Rotation, FrontSide);
             }
-            var surfaceTriangle = Mesh.GetSurfaceTriangle(TriangleIndex);
-            bool clockwise = MathExt.IsClockwise(surfaceTriangle);
 
+            var surfaceTriangle = Mesh.GetSurfaceTriangle(TriangleIndex);
             IntersectCoord nearest = null;
             int? nearestEdge = null;
             LineF movement = new LineF(Coord, Coord + v);
