@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
 
 namespace Assets
 {
@@ -17,13 +16,13 @@ namespace Assets
         /// <remarks>Code found here: http://answers.unity3d.com/questions/661383/whats-the-most-efficient-way-to-rotate-a-vector2-o.html </remarks>
         public static Vector2 Rotate(this Vector2 v, float degrees)
         {
-            float sin = Mathf.Sin(degrees * Mathf.Deg2Rad);
-            float cos = Mathf.Cos(degrees * Mathf.Deg2Rad);
+            float sin = UnityEngine.Mathf.Sin(degrees * UnityEngine.Mathf.Deg2Rad);
+            float cos = UnityEngine.Mathf.Cos(degrees * UnityEngine.Mathf.Deg2Rad);
 
-            float tx = v.x;
-            float ty = v.y;
-            v.x = (cos * tx) - (sin * ty);
-            v.y = (sin * tx) + (cos * ty);
+            float tx = v.X;
+            float ty = v.Y;
+            v.X = (cos * tx) - (sin * ty);
+            v.Y = (sin * tx) + (cos * ty);
             return v;
         }
 
@@ -35,7 +34,7 @@ namespace Assets
         /// <returns></returns>
         public static Vector2 Multiply(this Vector2 v, Vector2 vector)
         {
-            return new Vector2(v.x * vector.x, v.y * vector.y);
+            return new Vector2(v.X * vector.X, v.Y * vector.Y);
         }
     }
 }

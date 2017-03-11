@@ -187,7 +187,7 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0f, -1f));
             var expected = new SurfaceCoord(triangle, 0, new Vector2(0.1f, 0f));
             Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).magnitude < 0.001f);
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).Length < 0.001f);
         }
 
         [TestMethod]
@@ -200,7 +200,7 @@ namespace UnitTests
             //var result = coord.Move(new Vector2(0.7f, 0.7f));
             //var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
             //Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
-            //Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
+            //Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).Length < 0.001f);
 
             AssertOnFlatMesh(quad, 0, new Vector2(0.1f, 0.1f), new Vector2(0.7f, 0.7f));
         }
@@ -233,7 +233,7 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0.7f, 0.7f));
             var expected = new SurfaceCoord(quad, 1, new Vector2(0.2f, 0.8f), 270);
             Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).Length < 0.001f);
         }
 
         [TestMethod]
@@ -254,7 +254,7 @@ namespace UnitTests
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).Length < 0.001f);
         }
 
         [TestMethod]
@@ -275,7 +275,7 @@ namespace UnitTests
             var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
 
             var result = coord.Move(new Vector2(0.7f, 0.7f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).magnitude < 0.001f);
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.8f, 0.8f, 0f)).Length < 0.001f);
         }
 
         [TestMethod]
@@ -443,7 +443,7 @@ namespace UnitTests
             Vector2 localMove;
             ComputeLocalMovement(mesh, triangleIndex, startPoint, movement, out start, out localMove, out result);
 
-            Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).magnitude < 0.001f);
+            Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).Length < 0.001f);
         }
 
         void AssertDirectionOnFlatMesh(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
@@ -460,7 +460,7 @@ namespace UnitTests
             double expectedAngle = MathExt.AngleVector(v1 - v0);
             double resultAngle = MathExt.AngleVector(v3 - v2);
             Assert.AreEqual(expectedAngle, resultAngle, 0.1);
-            Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).magnitude < 0.001f);
+            Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).Length < 0.001f);
         }
 
         /// <summary>
@@ -480,18 +480,18 @@ namespace UnitTests
             var startBent = new SurfaceCoord(meshBent, triangleIndex, start.Coord);
             var resultBent = startBent.Move(localMove);
 
-            Assert.IsTrue((result.Coord - resultBent.Coord).magnitude < 0.001f);
+            Assert.IsTrue((result.Coord - resultBent.Coord).Length < 0.001f);
             Assert.IsTrue(Math.Abs(result.Rotation - resultBent.Rotation) < 0.001f);
         }
 
         private static void ComputeLocalMovement(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement, out SurfaceCoord start, out Vector2 localMove, out SurfaceCoord result)
         {
             Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
-            Vector2 surfaceCoord = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)startPoint);
+            Vector2 surfaceCoord = mesh.MeshToTriCoord(triangleIndex, (Vector3)startPoint);
             Debug.Assert(MathExt.PointInPolygon(surfaceCoord, mesh.GetSurfaceTriangle(triangleIndex)));
             start = new SurfaceCoord(mesh, triangleIndex, surfaceCoord);
 
-            localMove = mesh.TriangleSurfaceCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
+            localMove = mesh.MeshToTriCoord(triangleIndex, (Vector3)(movement + startPoint)) - start.Coord;
             result = start.Move(localMove);
         }
 
@@ -505,7 +505,7 @@ namespace UnitTests
             var result = coord.Move(new Vector2(0f, -1f));
             var expected = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0f));
             Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).magnitude < 0.001f);
+            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).Length < 0.001f);
         }
     }
 }

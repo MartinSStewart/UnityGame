@@ -194,7 +194,7 @@ namespace Assets
             return null;
         }
 
-        public Vector2 TriangleSurfaceCoord(int triangleIndex, Vector3 coord)
+        public Vector2 MeshToTriCoord(int triangleIndex, Vector3 coord)
         {
             var axis = TriangleXYAxis(triangleIndex);
             Vector3 v = coord - TriangleLocalOrigin(triangleIndex);
@@ -218,12 +218,12 @@ namespace Assets
         {
             Vector3[] triangle = GetTriangle(triangleIndex);
 
-            Vector3 yAxis = (triangle[1] - triangle[0]).normalized;
+            Vector3 yAxis = (triangle[1] - triangle[0]).Normalized();
 
             Vector3 xAxis = triangle[2] - triangle[0];
             //Adjust the xAxis so that it is orthogonal to the yAxis.
             Vector3 projection = Vector3.Dot(yAxis, xAxis) * yAxis;
-            xAxis = (xAxis - projection).normalized;
+            xAxis = (xAxis - projection).Normalized();
 
             return new[] { xAxis, yAxis };
         }
@@ -254,7 +254,7 @@ namespace Assets
         public Vector3 TriToMeshCoord(int triangleIndex, Vector2 local)
         {
             var axis = TriangleXYAxis(triangleIndex);
-            return TriangleLocalOrigin(triangleIndex) + axis[0] * local.x + axis[1] * local.y;
+            return TriangleLocalOrigin(triangleIndex) + axis[0] * local.X + axis[1] * local.Y;
         }
 
         public bool IsAdjacent(int triangleIndex0, int triangleIndex1)
@@ -279,19 +279,63 @@ namespace Assets
             throw new NotImplementedException();
         }
 
-        //public Vector3 GetPlanarAdjacentTriangle(int triangleIndex, int adjacentTriangleIndex)
-        //{
-        //    Debug.Assert(IsAdjacent(triangleIndex, adjacentTriangleIndex));
-        //    Vector3[] triangle = GetTriangle(triangleIndex);
-        //    Vector3 farPoint = GetTriangle(adjacentTriangleIndex).First(item => !triangle.Contains(item));
+        /// <summary>
+        /// Returns the free vertice in an adjacent triangle (aka the vertice that isn't part of the common edge) in surface coordinates relative to this triangle.
+        /// </summary>
+        /// <param name="triangleIndex">Array index of this triangle.</param>
+        /// <param name="adjacentTriangleIndex">Array index of adjacent triangle.</param>
+        /// <returns></returns>
+        public Vector3 GetPlanarAdjacentTriangle(int triangleIndex, int adjacentTriangleIndex)
+        {
+            Debug.Assert(IsAdjacent(triangleIndex, adjacentTriangleIndex));
 
-        //    var commonEdge = GetCommonEdge(triangleIndex, adjacentTriangleIndex).Indices.Select(item => _vertices[item]);
-        //    var distances = commonEdge.Select(item => (item - farPoint).magnitude);
+            int adjacentTriangleFreeIndex = GetTriangleIndices(adjacentTriangleIndex)
+                .First(item => !GetTriangleIndices(triangleIndex).Contains(item));
+            int triangleFreeIndex = GetTriangleIndices(triangleIndex)
+                .First(item => !GetTriangleIndices(adjacentTriangleIndex).Contains(item));
 
-        //    var commonEdgeSurface = GetCommonEdge(triangleIndex, adjacentTriangleIndex).Indices.Select(item => _vertices[item]);
+            Vector3[] triangle = GetTriangle(triangleIndex);
+            Vector2[] surfaceTriangle = GetSurfaceTriangle(triangleIndex);
 
-        //    MathExt.IntersectionTwoCircles(commonEdge[0], distances[0], common)
-        //    //GetAdjacentEdge(triangleIndex, )
-        //}
+            Vector3 adjacentTriangleFreeVertice = _vertices[adjacentTriangleFreeIndex];
+            Vector3 triangleFreeVertice = _vertices[triangleFreeIndex];
+
+
+            Vector3[] commonEdge = GetCommonEdge(triangleIndex, adjacentTriangleIndex)
+                .Indices
+                .Select(item => triangle[item])
+                .ToArray();
+
+            float angleOffset = MathExt.AngleOffAroundAxis(adjacentTriangleFreeVertice - commonEdge[0], triangleFreeVertice - commonEdge[0], commonEdge[1] - commonEdge[1]);
+            return new Vector3();
+            //var matrix = UnityEngine.Matrix4x4.TRS(new UnityEngine.Vector3(), new UnityEngine.Quaternion(commonEdge[1].X - commonEdge[0].X, commonEdge[1].Y - commonEdge[0].Y, commonEdge[1].z - commonEdge[0].z, angleOffset), UnityEngine.Vector3.one);
+            //var matrix2 = Matrix4.Identity;
+            //return new Vector3(matrix.MultiplyPoint(triangleFreeVertice.ToUnity()));
+            //Vector3.ProjectOnPlane(adjacentTriangleFreeVertice, MathExt.GetTriangleNormal(triangle));
+            //float[] distances = commonEdge.Select(item => (item - adjacentTriangleFreeVertice).Length).ToArray();
+
+
+            //Vector2[] commonEdgeSurface = GetCommonEdge(triangleIndex, adjacentTriangleIndex)
+            //    .Indices
+            //    .Select(item => surfaceTriangle[item])
+            //    .ToArray();
+
+            //Vector2[] intersections = MathExt.IntersectionTwoCircles(commonEdgeSurface[0], distances[0], commonEdgeSurface[1], distances[1]);
+
+            //LineF commonEdgeLine = new LineF(commonEdgeSurface);
+            //return commonEdgeLine.GetSideOf(intersections[0]) == commonEdgeLine.GetSideOf(MeshToTriCoord(triangleIndex, triangleFreeVertice)) ?
+            //    intersections[0] :
+            //    intersections[1];
+        }
+
+        public int[] GetTriangleIndices(int triangleIndex)
+        {
+            return new[]
+            {
+                _triangles[triangleIndex, 0],
+                _triangles[triangleIndex, 1],
+                _triangles[triangleIndex, 2]
+            };
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets;
+using UnitTests;
 
 namespace Tests
 {
@@ -27,11 +28,11 @@ namespace Tests
             ReadOnlyMesh mesh = new ReadOnlyMesh(
                 new[] {
                     new Vector3(),
-                    new Vector3(1, 0),
-                    new Vector3(2, 0),
-                    new Vector3(0, 1),
-                    new Vector3(1, 1),
-                    new Vector3(0, 2),
+                    new Vector3(1, 0, 0),
+                    new Vector3(2, 0, 0),
+                    new Vector3(0, 1, 0),
+                    new Vector3(1, 1, 0),
+                    new Vector3(0, 2, 0),
                 },
                 new[] {
                     0, 1, 3,
@@ -54,7 +55,7 @@ namespace Tests
             for (int i = 0; i < 1000; i++)
             {
                 var result = GetRandomTriangle(rand).GetSurfaceTriangle(0);
-                Assert.IsTrue(result[0].magnitude < maxErrorDelta);
+                Assert.IsTrue(result[0].Length < maxErrorDelta);
             }
 
         }
@@ -72,9 +73,29 @@ namespace Tests
                 var mesh = GetRandomTriangle(rand);
                 int triangleIndex = 0;
                 var result = mesh.GetSurfaceTriangle(0);
-                var expected = new Vector2(0, (mesh.GetTriangle(triangleIndex)[1] - mesh.GetTriangle(triangleIndex)[0]).magnitude);
-                Assert.IsTrue((result[1] - expected).magnitude < maxErrorDelta);
+                var expected = new Vector2(0, (mesh.GetTriangle(triangleIndex)[1] - mesh.GetTriangle(triangleIndex)[0]).Length);
+                Assert.IsTrue((result[1] - expected).Length < maxErrorDelta);
             }
+        }
+
+        [TestMethod]
+        public void GetPlanarAdjacentTriangleTest0()
+        {
+            Vector3[] vertices = new[] {
+                new Vector3(),
+                new Vector3(0, 1, 0),
+                new Vector3(1, 0, 0),
+                new Vector3(1, 1, 0)
+            };
+            var quad = new ReadOnlyMesh(
+                vertices,
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 3, 2 //Second triangle
+                });
+
+            Vector3 result = quad.GetPlanarAdjacentTriangle(0, 1);
+            Assert.IsTrue(result == vertices[3]);
         }
     }
 }

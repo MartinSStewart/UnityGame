@@ -10,7 +10,7 @@ namespace Assets
     [DebuggerDisplay("LineF {this[0]}, {this[1]}")]
     public class LineF
     {
-        public float Length { get { return Delta.magnitude; } }
+        public float Length { get { return Delta.Length; } }
         readonly Vector2[] _vertices = new Vector2[2];
         public Vector2 Delta { get { return (this[1] - this[0]); } }
 
@@ -27,6 +27,13 @@ namespace Assets
             _vertices[1] = end;
         }
 
+        public LineF(IList<Vector2> line)
+        {
+            Debug.Assert(line.Count == 2);
+            _vertices[0] = line[0];
+            _vertices[1] = line[1];
+        }
+
         public Vector2 Lerp(double t)
         {
             return MathExt.Lerp(_vertices[0], _vertices[1], t);
@@ -39,7 +46,7 @@ namespace Assets
         /// <param name="ignoreEdgeCase">Whether or not to treat points exactly on the line as to the right of it instead.</param>
         public Side GetSideOf(Vector2 point, bool ignoreEdgeCase = true)
         {
-            double p = (this[1].x - this[0].x) * (point.y - this[0].y) - (this[1].y - this[0].y) * (point.x - this[0].x);
+            double p = (this[1].X - this[0].X) * (point.Y - this[0].Y) - (this[1].Y - this[0].Y) * (point.X - this[0].X);
             if (p > 0)
             {
                 return Side.Left;
@@ -58,7 +65,7 @@ namespace Assets
         public float NearestT(Vector2 v, bool isSegment)
         {
             Vector2 vDelta = _vertices[1] - _vertices[0];
-            double t = ((v.x - _vertices[0].x) * vDelta.x + (v.y - _vertices[0].y) * vDelta.y) / (Math.Pow(vDelta.x, 2) + Math.Pow(vDelta.y, 2));
+            double t = ((v.X - _vertices[0].X) * vDelta.X + (v.Y - _vertices[0].Y) * vDelta.Y) / (Math.Pow(vDelta.X, 2) + Math.Pow(vDelta.Y, 2));
             if (isSegment)
             {
                 t = Math.Min(Math.Max(t, 0), 1);
