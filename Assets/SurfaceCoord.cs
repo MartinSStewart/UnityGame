@@ -34,7 +34,7 @@ namespace Assets
         /// <returns></returns>
         public Vector3 GetLocalCoord()
         {
-            return Mesh.GetLocalCoord(TriangleIndex, Coord);
+            return Mesh.TriToMeshCoord(TriangleIndex, Coord);
         }
 
         /// <summary>
@@ -126,28 +126,36 @@ namespace Assets
                     float movementLeft = (v - (nearest.Position - Coord)).magnitude;
                     
                     float angle0 = Vector2.Angle(edge.Delta, v);
-                    float rotationOffset = -Vector2.Angle(edge.Delta, edgeNext.Delta);
-                    rotationOffset = (float)MathExt.ValueWrap(rotationOffset, 360);
+                    float angle1 = Vector2.Angle(edge.Delta, MathExt.VectorFromAngle(Rotation, 1));
+                    //float rotationOffset;
                     Vector2 vNext = edgeNext.Delta.normalized.Rotate(angle0) * movementLeft;
+                    Vector2 direction = edgeNext.Delta.normalized.Rotate(angle1);
 
                     Vector2 coordNext;
-                    if ((edgeIndexNext.StartIndex + 1) % Constants.SidesOnTriangle == edgeIndexNext.EndIndex)
+                    bool flipped = (edgeIndexNext.StartIndex + 1) % Constants.SidesOnTriangle != edgeIndexNext.EndIndex;
+                    if (flipped)
                     {
-                        Vector2 normal = edgeNext.Delta;
-                        vNext = vNext.Mirror(normal);
-
+                        //rotationOffset = Vector2.Angle(edgeNext.Delta, edge.Delta);
+                        //rotationOffset = Vector2.Angle(v, vNext);
                         coordNext = edgeNext.Lerp(nearest.Last);
                     }
                     else
                     {
+                        Vector2 normal = edgeNext.Delta;
+                        //Vector2 normal = new Vector2(edgeNext.Delta.y, -edge.Delta.x);
+                        vNext = vNext.Mirror(normal);
+                        direction = direction.Mirror(normal);
+
+                        //rotationOffset = -Vector2.Angle(edge.Delta, edgeNext.Delta);
+                        //rotationOffset = Vector2.Angle(v, vNext);
                         coordNext = edgeNext.Lerp(nearest.Last);
                     }
 
                     Debug.Assert(
-                        (Mesh.GetLocalCoord((int)triangleIndexNext, coordNext) - Mesh.GetLocalCoord(TriangleIndex, nearest.Position)).magnitude < 0.0001f, 
-                        "There shouldn't be a jump in position when moving between triangle edges.");
+                        (Mesh.TriToMeshCoord((int)triangleIndexNext, coordNext) - Mesh.TriToMeshCoord(TriangleIndex, nearest.Position)).magnitude < 0.0001f, 
+                        "There shouldn't be a jump in 3d position when moving between triangle edges.");
 
-                    return new SurfaceCoord(Mesh, (int)triangleIndexNext, coordNext, Rotation + rotationOffset)
+                    return new SurfaceCoord(Mesh, (int)triangleIndexNext, coordNext, (float)MathExt.AngleVector(direction), FrontSide ^ flipped)
                         .AdjustCoord()
                         .Move(vNext);
                 }

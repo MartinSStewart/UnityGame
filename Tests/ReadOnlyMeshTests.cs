@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets;
-using UnitTests;
 
 namespace Tests
 {
     [TestClass]
     public class ReadOnlyMeshTests
     {
-        public ReadOnlyMesh GetRandomTriangle(System.Random rand)
+        public ReadOnlyMesh GetRandomTriangle(Random rand)
         {
             Vector3[] vertices = new Vector3[3]; 
             for (int i = 0; i < vertices.Length; i++)
@@ -50,7 +49,7 @@ namespace Tests
         [TestMethod]
         public void SurfaceTrianglesFirstPointIsOnOrigin()
         {
-            var rand = new System.Random(123123);
+            var rand = new Random(123123);
             const double maxErrorDelta = 0.0001f;
             for (int i = 0; i < 1000; i++)
             {
@@ -66,7 +65,7 @@ namespace Tests
         [TestMethod]
         public void SurfaceTrianglesSecondPointIsOnYAxis()
         {
-            var rand = new System.Random(123123);
+            var rand = new Random(123123);
             const double maxErrorDelta = 0.01f;
             for (int i = 0; i < 1000; i++)
             {

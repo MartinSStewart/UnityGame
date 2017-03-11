@@ -230,7 +230,7 @@ namespace Assets
         /// Return the coord relative to the parent mesh.
         /// </summary>
         /// <returns></returns>
-        public Vector3 GetLocalCoord(int triangleIndex, Vector2 local)
+        public Vector3 TriToMeshCoord(int triangleIndex, Vector2 local)
         {
             var axis = TriangleXYAxis(triangleIndex);
             return TriangleLocalOrigin(triangleIndex) + axis[0] * local.x + axis[1] * local.y;
