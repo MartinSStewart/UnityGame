@@ -11,19 +11,14 @@ namespace Assets
         /// Returns a rotated copy of a vector.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="degrees"></param>
+        /// <param name="radians"></param>
         /// <returns></returns>
         /// <remarks>Code found here: http://answers.unity3d.com/questions/661383/whats-the-most-efficient-way-to-rotate-a-vector2-o.html </remarks>
-        public static Vector2 Rotate(this Vector2 v, float degrees)
+        public static Vector2 Rotate(this Vector2 v, float radians)
         {
-            float sin = UnityEngine.Mathf.Sin(degrees * UnityEngine.Mathf.Deg2Rad);
-            float cos = UnityEngine.Mathf.Cos(degrees * UnityEngine.Mathf.Deg2Rad);
-
-            float tx = v.X;
-            float ty = v.Y;
-            v.X = (cos * tx) - (sin * ty);
-            v.Y = (sin * tx) + (cos * ty);
-            return v;
+            double sin = Math.Sin(radians);
+            double cos = Math.Cos(radians);
+            return new Vector2((float)((cos * v.X) - (sin * v.Y)), (float)((sin * v.X) + (cos * v.Y)));
         }
 
         /// <summary>

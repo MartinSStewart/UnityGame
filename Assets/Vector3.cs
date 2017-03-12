@@ -1616,5 +1616,15 @@ namespace Assets
         }
 
         #endregion
+
+        public UnityEngine.Vector3 ToUnity()
+        {
+            return new UnityEngine.Vector3(X, Y, Z);
+        }
+
+        public static explicit operator Vector3(Vector4 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
+        }
     }
 }

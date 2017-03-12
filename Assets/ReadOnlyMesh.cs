@@ -16,6 +16,7 @@ namespace Assets
         /// </summary>
         readonly int[,] _triangles;
         readonly Vector3[] _vertices;
+        public Vector3[] Vertices { get { return _vertices.ToArray(); } }
         public int TriangleCount { get { return _triangles.GetLength(0); } }
         /// <summary>
         /// Lookup table for finding neighboring triangles. The data is stored as [triangle index, edge index].
@@ -46,18 +47,6 @@ namespace Assets
             UpdateAdjacentTriangles();
         }
 
-        /// <summary>
-        /// Returns copies of vertices to iterate through.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<Vector3> GetVertices()
-        {
-            foreach (var v in _vertices)
-            {
-                yield return v;
-            }
-        }
-
         public void Translate(Vector3 v)
         {
             for (int i = 0; i < _vertices.Length; i++)
@@ -72,6 +61,16 @@ namespace Assets
             {
                 _vertices[i] *= scale;
             }
+        }
+
+        public int[] GetTriangleIndices(int triangleIndex)
+        {
+            return new[]
+            {
+                _triangles[triangleIndex, 0],
+                _triangles[triangleIndex, 1],
+                _triangles[triangleIndex, 2]
+            };
         }
 
         public Vector3[] GetTriangle(int triangleIndex)
@@ -100,7 +99,7 @@ namespace Assets
                         Debug.Assert(triangleIndex > i);
 
                         _adjacentTriangles[i, j] = triangleIndex;
-                        var edge = GetAdjacentEdge(i, j);
+                        var edge = AdjacentEdge(i, j);
                         Debug.Assert(edge != null);
                         _adjacentTriangles[(int)triangleIndex, edge.GetLeadingIndex()] = i;
                     }
@@ -151,14 +150,14 @@ namespace Assets
             return null;
         }
 
-        public TriangleEdge GetAdjacentEdge(int triangleIndex, int edgeIndex)
+        public TriangleEdge AdjacentEdge(int triangleIndex, int edgeIndex)
         {
             int? temp = GetAdjacentTriangle(triangleIndex, edgeIndex);
             if (temp == null)
             {
                 return null;
             }
-            var result = GetCommonEdge(triangleIndex, (int)temp);
+            var result = AdjacentEdgeByTriIndex(triangleIndex, (int)temp);
             Debug.Assert(result != null, "Execution should not have reached this point.");
             return result;
         }
@@ -169,7 +168,7 @@ namespace Assets
         /// <param name="triangleIndex"></param>
         /// <param name="triangleIndexAdjacent"></param>
         /// <returns></returns>
-        public TriangleEdge GetCommonEdge(int triangleIndex, int adjacentTriangleIndex)
+        public TriangleEdge AdjacentEdgeByTriIndex(int triangleIndex, int adjacentTriangleIndex)
         {
             for (int i = 0; i < Constants.SidesOnTriangle; i++)
             {
@@ -273,10 +272,13 @@ namespace Assets
         /// <param name="triangleIndex"></param>
         /// <param name="triangleAdjacentIndex"></param>
         /// <returns></returns>
-        public Vector2 TriToAdjacentCoord(int triangleIndex, int triangleAdjacentIndex)
+        public Vector2 TriToAdjacentCoord(int triangleIndex, int triangleAdjacentIndex, Vector2 coord)
         {
             Debug.Assert(IsAdjacent(triangleIndex, triangleAdjacentIndex));
-            throw new NotImplementedException();
+
+            Matrix4 matrix = GetPlanarAdjacentTriangleMatrix(triangleIndex, triangleAdjacentIndex);
+            Vector3 meshCoord = (Vector3)(matrix * new Vector4(TriToMeshCoord(triangleIndex, coord), 1));
+            return MeshToTriCoord(triangleAdjacentIndex, meshCoord);
         }
 
         /// <summary>
@@ -287,55 +289,35 @@ namespace Assets
         /// <returns></returns>
         public Vector3 GetPlanarAdjacentTriangle(int triangleIndex, int adjacentTriangleIndex)
         {
+            int adjacentTriangleFreeIndex = GetAdjacentFreeVerticeIndex(triangleIndex, adjacentTriangleIndex);
+            Vector3 adjacentTriangleFreeVertice = _vertices[adjacentTriangleFreeIndex];
+            return (Vector3)(new Vector4(adjacentTriangleFreeVertice, 1) * GetPlanarAdjacentTriangleMatrix(triangleIndex, adjacentTriangleIndex));
+        }
+
+        public Matrix4 GetPlanarAdjacentTriangleMatrix(int triangleIndex, int adjacentTriangleIndex)
+        {
             Debug.Assert(IsAdjacent(triangleIndex, adjacentTriangleIndex));
 
-            int adjacentTriangleFreeIndex = GetTriangleIndices(adjacentTriangleIndex)
-                .First(item => !GetTriangleIndices(triangleIndex).Contains(item));
-            int triangleFreeIndex = GetTriangleIndices(triangleIndex)
-                .First(item => !GetTriangleIndices(adjacentTriangleIndex).Contains(item));
-
-            Vector3[] triangle = GetTriangle(triangleIndex);
-            Vector2[] surfaceTriangle = GetSurfaceTriangle(triangleIndex);
+            int adjacentTriangleFreeIndex = GetAdjacentFreeVerticeIndex(triangleIndex, adjacentTriangleIndex);
+            int triangleFreeIndex = GetAdjacentFreeVerticeIndex(adjacentTriangleIndex, triangleIndex);
 
             Vector3 adjacentTriangleFreeVertice = _vertices[adjacentTriangleFreeIndex];
             Vector3 triangleFreeVertice = _vertices[triangleFreeIndex];
 
-
-            Vector3[] commonEdge = GetCommonEdge(triangleIndex, adjacentTriangleIndex)
+            Vector3[] commonEdge = AdjacentEdgeByTriIndex(triangleIndex, adjacentTriangleIndex)
                 .Indices
-                .Select(item => triangle[item])
+                .Select(item => GetTriangle(adjacentTriangleIndex)[item])
                 .ToArray();
 
-            float angleOffset = MathExt.AngleOffAroundAxis(adjacentTriangleFreeVertice - commonEdge[0], triangleFreeVertice - commonEdge[0], commonEdge[1] - commonEdge[1]);
-            return new Vector3();
-            //var matrix = UnityEngine.Matrix4x4.TRS(new UnityEngine.Vector3(), new UnityEngine.Quaternion(commonEdge[1].X - commonEdge[0].X, commonEdge[1].Y - commonEdge[0].Y, commonEdge[1].z - commonEdge[0].z, angleOffset), UnityEngine.Vector3.one);
-            //var matrix2 = Matrix4.Identity;
-            //return new Vector3(matrix.MultiplyPoint(triangleFreeVertice.ToUnity()));
-            //Vector3.ProjectOnPlane(adjacentTriangleFreeVertice, MathExt.GetTriangleNormal(triangle));
-            //float[] distances = commonEdge.Select(item => (item - adjacentTriangleFreeVertice).Length).ToArray();
+            double angleOffset = Math.PI - MathExt.AngleOffAroundAxis(adjacentTriangleFreeVertice - commonEdge[0], triangleFreeVertice - commonEdge[0], commonEdge[1] - commonEdge[0]);
 
-
-            //Vector2[] commonEdgeSurface = GetCommonEdge(triangleIndex, adjacentTriangleIndex)
-            //    .Indices
-            //    .Select(item => surfaceTriangle[item])
-            //    .ToArray();
-
-            //Vector2[] intersections = MathExt.IntersectionTwoCircles(commonEdgeSurface[0], distances[0], commonEdgeSurface[1], distances[1]);
-
-            //LineF commonEdgeLine = new LineF(commonEdgeSurface);
-            //return commonEdgeLine.GetSideOf(intersections[0]) == commonEdgeLine.GetSideOf(MeshToTriCoord(triangleIndex, triangleFreeVertice)) ?
-            //    intersections[0] :
-            //    intersections[1];
+            return Matrix4.CreateTranslation(-commonEdge[0]) * Matrix4.CreateFromAxisAngle(commonEdge[1] - commonEdge[0], (float)angleOffset) * Matrix4.CreateTranslation(commonEdge[0]);
         }
 
-        public int[] GetTriangleIndices(int triangleIndex)
+        public int GetAdjacentFreeVerticeIndex(int triangleIndex, int adjacentTriangleIndex)
         {
-            return new[]
-            {
-                _triangles[triangleIndex, 0],
-                _triangles[triangleIndex, 1],
-                _triangles[triangleIndex, 2]
-            };
+            return GetTriangleIndices(adjacentTriangleIndex)
+                .First(item => !GetTriangleIndices(triangleIndex).Contains(item));
         }
     }
 }

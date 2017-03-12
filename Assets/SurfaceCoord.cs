@@ -61,7 +61,7 @@ namespace Assets
         public static bool AlmostEquals(SurfaceCoord coord0, SurfaceCoord coord1, float delta)
         {
             return coord0.Mesh == coord1.Mesh &&
-                (coord0.Coord - coord1.Coord).magnitude <= delta &&
+                (coord0.Coord - coord1.Coord).Length <= delta &&
                 coord0.TriangleIndex == coord1.TriangleIndex &&
                 Math.Abs(coord0.Rotation - coord1.Rotation) <= delta;
         }
@@ -87,7 +87,7 @@ namespace Assets
         {
             Debug.Assert(MathExt.PointInPolygon(Coord, Mesh.GetSurfaceTriangle(TriangleIndex)), "Coord should never be outside of triangle when calling this method.");
 
-            if (v.magnitude == 0)
+            if (v.Length == 0)
             {
                 return new SurfaceCoord(Mesh, TriangleIndex, Coord, Rotation, FrontSide);
             }
@@ -121,17 +121,17 @@ namespace Assets
                 else
                 {
                     var surfaceTriangleNext = Mesh.GetSurfaceTriangle((int)triangleIndexNext);
-                    TriangleEdge edgeIndexNext = Mesh.GetAdjacentEdge(TriangleIndex, (int)nearestEdge);
+                    TriangleEdge edgeIndexNext = Mesh.AdjacentEdge(TriangleIndex, (int)nearestEdge);
                     LineF edge = new LineF(surfaceTriangle[(int)nearestEdge], surfaceTriangle[(int)(nearestEdge + 1) % Constants.SidesOnTriangle]);
                     LineF edgeNext = new LineF(surfaceTriangleNext[edgeIndexNext.StartIndex], surfaceTriangleNext[edgeIndexNext.EndIndex]);
 
-                    float movementLeft = (v - (nearest.Position - Coord)).magnitude;
-                    
-                    float angle0 = Vector2.Angle(edge.Delta, v);
-                    float angle1 = Vector2.Angle(edge.Delta, MathExt.VectorFromAngle(Rotation, 1));
+                    float movementLeft = (v - (nearest.Position - Coord)).Length;
+
+                    float angle0 = (float)(Vector2.Angle(edge.Delta, v));
+                    float angle1 = (float)Vector2.Angle(edge.Delta, MathExt.VectorFromAngle(Rotation, 1));
                     //float rotationOffset;
-                    Vector2 vNext = edgeNext.Delta.normalized.Rotate(angle0) * movementLeft;
-                    Vector2 direction = edgeNext.Delta.normalized.Rotate(angle1);
+                    Vector2 vNext = edgeNext.Delta.Normalized().Rotate(angle0) * movementLeft;
+                    Vector2 direction = edgeNext.Delta.Normalized().Rotate(angle1);
 
                     Vector2 coordNext;
                     bool flipped = (edgeIndexNext.StartIndex + 1) % Constants.SidesOnTriangle != edgeIndexNext.EndIndex;
@@ -144,7 +144,7 @@ namespace Assets
                     else
                     {
                         Vector2 normal = edgeNext.Delta;
-                        //Vector2 normal = new Vector2(edgeNext.Delta.y, -edge.Delta.x);
+                        //Vector2 normal = new Vector2(edgeNext.Delta.Y, -edge.Delta.X);
                         vNext = vNext.Mirror(normal);
                         direction = direction.Mirror(normal);
 
@@ -154,7 +154,7 @@ namespace Assets
                     }
 
                     Debug.Assert(
-                        (Mesh.TriToMeshCoord((int)triangleIndexNext, coordNext) - Mesh.TriToMeshCoord(TriangleIndex, nearest.Position)).magnitude < 0.0001f, 
+                        (Mesh.TriToMeshCoord((int)triangleIndexNext, coordNext) - Mesh.TriToMeshCoord(TriangleIndex, nearest.Position)).Length < 0.0001f,
                         "There shouldn't be a jump in 3d position when moving between triangle edges.");
 
                     return new SurfaceCoord(Mesh, (int)triangleIndexNext, coordNext, (float)MathExt.AngleVector(direction), FrontSide ^ flipped)

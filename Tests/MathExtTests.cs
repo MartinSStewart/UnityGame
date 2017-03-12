@@ -21,8 +21,8 @@ namespace Tests
                 new Vector2(0.5f, 0.8660254f)
             };
 
-            Assert.IsTrue((result[0] - expected[0]).magnitude < 0.001f);
-            Assert.IsTrue((result[1] - expected[1]).magnitude < 0.001f);
+            Assert.IsTrue((result[0] - expected[0]).Length < 0.001f);
+            Assert.IsTrue((result[1] - expected[1]).Length < 0.001f);
         }
 
         [TestMethod]
@@ -35,8 +35,8 @@ namespace Tests
                 new Vector2(1f, 0f)
             };
 
-            Assert.IsTrue((result[0] - expected[0]).magnitude < 0.001f);
-            Assert.IsTrue((result[1] - expected[1]).magnitude < 0.001f);
+            Assert.IsTrue((result[0] - expected[0]).Length < 0.001f);
+            Assert.IsTrue((result[1] - expected[1]).Length < 0.001f);
         }
     }
 }

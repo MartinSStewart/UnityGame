@@ -439,11 +439,13 @@ namespace UnitTests
 
         void AssertOnFlatMesh(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
         {
-            SurfaceCoord start, result;
+            SurfaceCoord start, end;
             Vector2 localMove;
-            ComputeLocalMovement(mesh, triangleIndex, startPoint, movement, out start, out localMove, out result);
+            ComputeLocalMovement(mesh, triangleIndex, startPoint, movement, out start, out localMove, out end);
 
-            Assert.IsTrue(((Vector2)result.GetLocalCoord() - (startPoint + movement)).Length < 0.001f);
+            var result = (Vector2)end.GetLocalCoord();
+            var expected = startPoint + movement;
+            Assert.IsTrue((result - expected).Length < 0.001f);
         }
 
         void AssertDirectionOnFlatMesh(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement)
@@ -486,7 +488,7 @@ namespace UnitTests
 
         private static void ComputeLocalMovement(ReadOnlyMesh mesh, int triangleIndex, Vector2 startPoint, Vector2 movement, out SurfaceCoord start, out Vector2 localMove, out SurfaceCoord result)
         {
-            Debug.Assert(mesh.GetVertices().All(item => item.z == 0), "Mesh needs to be completely on xy plane.");
+            Debug.Assert(mesh.Vertices.All(item => item.Z == 0), "Mesh needs to be completely on xy plane.");
             Vector2 surfaceCoord = mesh.MeshToTriCoord(triangleIndex, (Vector3)startPoint);
             Debug.Assert(MathExt.PointInPolygon(surfaceCoord, mesh.GetSurfaceTriangle(triangleIndex)));
             start = new SurfaceCoord(mesh, triangleIndex, surfaceCoord);

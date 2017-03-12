@@ -206,7 +206,7 @@ namespace Assets
         #region public float Length
 
         /// <summary>
-        /// Gets the length (magnitude) of the vector.
+        /// Gets the length (Length) of the vector.
         /// </summary>
         /// <see cref="LengthFast"/>
         /// <seealso cref="LengthSquared"/>
@@ -220,31 +220,10 @@ namespace Assets
 
         #endregion
 
-        #region public float LengthFast
-
-        /// <summary>
-        /// Gets an approximation of the vector length (magnitude).
-        /// </summary>
-        /// <remarks>
-        /// This property uses an approximation of the square root function to calculate vector magnitude, with
-        /// an upper error bound of 0.001.
-        /// </remarks>
-        /// <see cref="Length"/>
-        /// <seealso cref="LengthSquared"/>
-        public float LengthFast
-        {
-            get
-            {
-                return 1.0f / MathHelper.InverseSqrtFast(X * X + Y * Y);
-            }
-        }
-
-        #endregion
-
         #region public float LengthSquared
 
         /// <summary>
-        /// Gets the square of the vector length (magnitude).
+        /// Gets the square of the vector length (Length).
         /// </summary>
         /// <remarks>
         /// This property avoids the costly square root operation required by the Length property. This makes it more suitable
@@ -310,20 +289,6 @@ namespace Assets
         public void Normalize()
         {
             float scale = 1.0f / this.Length;
-            X *= scale;
-            Y *= scale;
-        }
-
-        #endregion
-
-        #region public void NormalizeFast()
-
-        /// <summary>
-        /// Scales the Vector2 to approximately unit length.
-        /// </summary>
-        public void NormalizeFast()
-        {
-            float scale = MathHelper.InverseSqrtFast(X * X + Y * Y);
             X *= scale;
             Y *= scale;
         }
@@ -713,7 +678,7 @@ namespace Assets
         #region Min
 
         /// <summary>
-        /// Returns the Vector3 with the minimum magnitude
+        /// Returns the Vector3 with the minimum Length
         /// </summary>
         /// <param name="left">Left operand</param>
         /// <param name="right">Right operand</param>
@@ -728,7 +693,7 @@ namespace Assets
         #region Max
 
         /// <summary>
-        /// Returns the Vector3 with the minimum magnitude
+        /// Returns the Vector3 with the minimum Length
         /// </summary>
         /// <param name="left">Left operand</param>
         /// <param name="right">Right operand</param>
@@ -777,7 +742,7 @@ namespace Assets
         /// Scale a vector to unit length
         /// </summary>
         /// <param name="vec">The input vector</param>
-        /// <returns>The normalized vector</returns>
+        /// <returns>The Normalized() vector</returns>
         public static Vector2 Normalize(Vector2 vec)
         {
             float scale = 1.0f / vec.Length;
@@ -790,39 +755,10 @@ namespace Assets
         /// Scale a vector to unit length
         /// </summary>
         /// <param name="vec">The input vector</param>
-        /// <param name="result">The normalized vector</param>
+        /// <param name="result">The Normalized() vector</param>
         public static void Normalize(ref Vector2 vec, out Vector2 result)
         {
             float scale = 1.0f / vec.Length;
-            result.X = vec.X * scale;
-            result.Y = vec.Y * scale;
-        }
-
-        #endregion
-
-        #region NormalizeFast
-
-        /// <summary>
-        /// Scale a vector to approximately unit length
-        /// </summary>
-        /// <param name="vec">The input vector</param>
-        /// <returns>The normalized vector</returns>
-        public static Vector2 NormalizeFast(Vector2 vec)
-        {
-            float scale = MathHelper.InverseSqrtFast(vec.X * vec.X + vec.Y * vec.Y);
-            vec.X *= scale;
-            vec.Y *= scale;
-            return vec;
-        }
-
-        /// <summary>
-        /// Scale a vector to approximately unit length
-        /// </summary>
-        /// <param name="vec">The input vector</param>
-        /// <param name="result">The normalized vector</param>
-        public static void NormalizeFast(ref Vector2 vec, out Vector2 result)
-        {
-            float scale = MathHelper.InverseSqrtFast(vec.X * vec.X + vec.Y * vec.Y);
             result.X = vec.X * scale;
             result.Y = vec.Y * scale;
         }
@@ -1180,5 +1116,41 @@ namespace Assets
         }
 
         #endregion
+
+        public static explicit operator Vector2(Vector3 v)
+        {
+            return new Vector2(v.X, v.Y);
+        }
+
+        public static explicit operator Vector3(Vector2 v)
+        {
+            return new Vector3(v.X, v.Y, 0);
+        }
+
+        public static double Angle(Vector2 v0)
+        {
+            double val = Math.Atan2(v0.Y, v0.X);
+
+            if (double.IsNaN(val))
+            {
+                return 0;
+            }
+            return (val + 2 * Math.PI) % (2 * Math.PI) - Math.PI / 2;
+        }
+
+        public static double Angle(Vector2 v0, Vector2 v1)
+        {
+            return AngleDiff(Angle(v0), Angle(v1));
+        }
+
+        public static double AngleDiff(double angle0, double angle1)
+        {
+            return ((angle1 - angle0) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+        }
+
+        public UnityEngine.Vector2 ToUnity()
+        {
+            return new UnityEngine.Vector2(X, Y);
+        }
     }
 }
