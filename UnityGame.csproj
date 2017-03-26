@@ -75,9 +75,6 @@
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK">
-      <HintPath>Assets\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Constants.cs" />
@@ -95,7 +92,9 @@
     <Compile Include="Assets\Quaternion.cs" />
     <Compile Include="Assets\ReadOnlyMesh.cs" />
     <Compile Include="Assets\Side.cs" />
+    <Compile Include="Assets\SimpleMesh.cs" />
     <Compile Include="Assets\SurfaceCoord.cs" />
+    <Compile Include="Assets\Triangle.cs" />
     <Compile Include="Assets\TriangleEdge.cs" />
     <Compile Include="Assets\Vector2.cs" />
     <Compile Include="Assets\Vector2Extension.cs" />

@@ -497,17 +497,60 @@ namespace UnitTests
             result = start.Move(localMove);
         }
 
+        /// <summary>
+        /// If we don't move outside of the starting triangle then direction should not change.
+        /// </summary>
         [TestMethod]
-        public void MoveTestForRotation0()
+        public void MoveCorrectRotationTest0()
         {
             var quad = GetAxisAlignedQuad();
 
-            var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f));
+            float expected = (float)Math.PI / 10;
+            var coord = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0.1f), expected);
+            float result = coord.Move(new Vector2(0.01f, 0.01f)).Rotation;
+            Assert.AreEqual(expected, result);
+        }
 
-            var result = coord.Move(new Vector2(0f, -1f));
-            var expected = new SurfaceCoord(quad, 0, new Vector2(0.1f, 0f));
-            Assert.IsTrue(SurfaceCoord.AlmostEquals(result, expected, 0.001f));
-            Assert.IsTrue((result.GetLocalCoord() - new Vector3(0.1f, 0f, 0f)).Length < 0.001f);
+        [TestMethod]
+        public void MoveCorrectRotationTest1()
+        {
+            var quad = GetAxisAlignedQuad();
+
+            int count = 30;
+            for (int i = 0; i < count; i++)
+            {
+                double expected = i * 2 * Math.PI / count;
+                var coord = new SurfaceCoord(quad, 0, new Vector2(0.2f, 0.2f), (float)(expected + 3 * Math.PI/2));
+                var moved = coord.Move(new Vector2(0.6f, 0.6f));
+                double diff = MathExt.AngleDiff(expected, moved.Rotation);
+                Assert.IsTrue(Math.Abs(diff) < 0.0001);
+            }
+        }
+
+        [TestMethod]
+        public void MoveCorrectRotationTest2()
+        {
+            var quad = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(),
+                    new Vector3(0, 1, 0),
+                    new Vector3(1, 0, 0),
+                    new Vector3(1, 1, 0)
+                },
+                new[] {
+                    0, 1, 2, //First triangle
+                    1, 3, 2 //Second triangle
+                });
+
+            int count = 30;
+            for (int i = 0; i < count; i++)
+            {
+                double expected = i * 2 * Math.PI / count;
+                var coord = new SurfaceCoord(quad, 0, new Vector2(0.2f, 0.2f), (float)(expected + 3 * Math.PI / 2));
+                var moved = coord.Move(new Vector2(0.6f, 0.6f));
+                double diff = MathExt.AngleDiff(expected, moved.Rotation);
+                Assert.IsTrue(Math.Abs(diff) < 0.0001);
+            }
         }
     }
 }

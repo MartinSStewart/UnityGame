@@ -223,9 +223,9 @@ namespace Assets
         /// <param name="degrees"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        public static Vector2 VectorFromAngle(double radians, double length)
+        public static Vector2 VectorFromAngle(double radians, double length = 1)
         {
-            return new Vector2((float)(-Math.Cos(radians) * length), (float)(Math.Sin(radians) * length));
+            return new Vector2((float)(Math.Cos(radians) * length), (float)(Math.Sin(radians) * length));
         }
 
         public static double AngleVector(Vector2 v0)
@@ -298,6 +298,11 @@ namespace Assets
             Vector3 right = Vector3.Cross(axis, forward).Normalized();
             forward = Vector3.Cross(right, axis).Normalized();
             return Mathf.Atan2(Vector3.Dot(v, right), Vector3.Dot(v, forward));
+        }
+
+        public static double AngleDiff(double angle0, double angle1)
+        {
+            return ((angle1 - angle0) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
         }
     }
 }

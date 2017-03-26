@@ -12,7 +12,6 @@ namespace Assets
 
         public Controller()
         {
-            //Plane plane = new Plane(new Vector3(), new Vector3(), null);
             var cube = GameObject.FindGameObjectWithTag("Level");
             var viewedModel = (MeshFilter)cube.GetComponent(typeof(MeshFilter));
 
@@ -26,7 +25,6 @@ namespace Assets
             var playerModel = GameObject.FindGameObjectWithTag("Player");
             playerModel.transform.SetParent(viewedModel.transform);
             playerModel.transform.localPosition = new UnityEngine.Vector3();
-            //player.transform.position = coord.GetWorldCoord();
         }
 
         public void Update()
@@ -38,11 +36,11 @@ namespace Assets
             var pos = player.Position;
             if (Input.GetKey(KeyCode.A))
             {
-                player.Position = player.Position.Rotate(-2f);//new SurfaceCoord(pos.Mesh, pos.TriangleIndex, pos.Coord, pos.Rotation - 0.1f, pos.FrontSide);
+                player.Position = player.Position.Rotate(-0.02f);
             }
             else if (Input.GetKey(KeyCode.D))
             {
-                player.Position = player.Position.Rotate(2f); //new SurfaceCoord(pos.Mesh, pos.TriangleIndex, pos.Coord, pos.Rotation + 0.1f, pos.FrontSide);
+                player.Position = player.Position.Rotate(0.02f);
             }
 
             var playerModel = GameObject.FindGameObjectWithTag("Player");

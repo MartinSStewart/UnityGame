@@ -127,7 +127,7 @@ namespace Assets
 
                     float movementLeft = (v - (nearest.Position - Coord)).Length;
 
-                    float angle0 = (float)(Vector2.Angle(edge.Delta, v));
+                    float angle0 = (float)Vector2.Angle(edge.Delta, v);
                     float angle1 = (float)Vector2.Angle(edge.Delta, MathExt.VectorFromAngle(Rotation, 1));
                     //float rotationOffset;
                     Vector2 vNext = edgeNext.Delta.Normalized().Rotate(angle0) * movementLeft;
@@ -157,7 +157,7 @@ namespace Assets
                         (Mesh.TriToMeshCoord((int)triangleIndexNext, coordNext) - Mesh.TriToMeshCoord(TriangleIndex, nearest.Position)).Length < 0.0001f,
                         "There shouldn't be a jump in 3d position when moving between triangle edges.");
 
-                    return new SurfaceCoord(Mesh, (int)triangleIndexNext, coordNext, (float)MathExt.AngleVector(direction), FrontSide ^ flipped)
+                    return new SurfaceCoord(Mesh, (int)triangleIndexNext, coordNext, (float)-MathExt.AngleVector(direction), FrontSide ^ flipped)
                         .AdjustCoord()
                         .Move(vNext);
                 }
