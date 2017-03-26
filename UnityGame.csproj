@@ -77,6 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\AdjacentTriangles.cs" />
     <Compile Include="Assets\Constants.cs" />
     <Compile Include="Assets\Controller.cs" />
     <Compile Include="Assets\Debug.cs" />

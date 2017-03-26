@@ -12,16 +12,16 @@ namespace Assets
     public class ReadOnlyMesh
     {
         /// <summary>
-        /// Indices pointing into the _vertices array. The indices are stored as [triangle index, edge index].
+        /// Indices pointing into the _vertices array.
         /// </summary>
         readonly Triangle[] _triangles;
         readonly Vector3[] _vertices;
         public Vector3[] Vertices { get { return _vertices.ToArray(); } }
         public int TriangleCount { get { return _triangles.Length; } }
         /// <summary>
-        /// Lookup table for finding neighboring triangles. The data is stored as [triangle index, edge index].
+        /// Lookup table for finding neighboring triangles.
         /// </summary>
-        readonly int?[,] _adjacentTriangles;
+        readonly AdjacentTriangles[] _adjacentTriangles;
 
         public ReadOnlyMesh(UnityEngine.Mesh mesh)
             : this(mesh.vertices.Select(item => new Vector3(item)).ToArray(), mesh.triangles)
@@ -33,7 +33,7 @@ namespace Assets
             Debug.Assert(triangles.Length % Constants.SidesOnTriangle == 0);
 
             _triangles = new Triangle[triangles.Length / Constants.SidesOnTriangle];
-            _adjacentTriangles = new int?[TriangleCount, Constants.SidesOnTriangle];
+            _adjacentTriangles = new AdjacentTriangles[TriangleCount];
             _vertices = vertices.ToArray();
 
             for (int i = 0; i < TriangleCount; i++)
@@ -73,11 +73,11 @@ namespace Assets
 
         public void UpdateAdjacentTriangles()
         {
-            for (int i = 0; i < _adjacentTriangles.GetLength(0); i++)
+            for (int i = 0; i < _adjacentTriangles.Length; i++)
             {
-                for (int j = 0; j < _adjacentTriangles.GetLength(1); j++)
+                for (int j = 0; j < Constants.SidesOnTriangle; j++)
                 {
-                    if (_adjacentTriangles[i,j] != null)
+                    if (_adjacentTriangles[i][j] != null)
                     {
                         continue;
                     }
@@ -86,10 +86,10 @@ namespace Assets
                     {
                         Debug.Assert(triangleIndex > i);
 
-                        _adjacentTriangles[i, j] = triangleIndex;
+                        _adjacentTriangles[i] = _adjacentTriangles[i].SetValue(triangleIndex, j);
                         var edge = AdjacentEdge(i, j);
                         Debug.Assert(edge != null);
-                        _adjacentTriangles[(int)triangleIndex, edge.GetLeadingIndex()] = i;
+                        _adjacentTriangles[(int)triangleIndex] = _adjacentTriangles[(int)triangleIndex].SetValue(i, edge.GetLeadingIndex());
                     }
                 }
             }
@@ -97,7 +97,7 @@ namespace Assets
 
         public int? GetAdjacentTriangle(int triangleIndex, int edgeIndex)
         {
-            return _adjacentTriangles[triangleIndex, edgeIndex];
+            return _adjacentTriangles[triangleIndex][edgeIndex];
         }
 
         public int?[] GetAdjacentTriangles(int triangleIndex)
