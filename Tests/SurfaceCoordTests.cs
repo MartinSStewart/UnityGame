@@ -538,19 +538,41 @@ namespace UnitTests
                     new Vector3(1, 1, 0)
                 },
                 new[] {
-                    0, 1, 2, //First triangle
-                    1, 3, 2 //Second triangle
+                    0, 1, 2,
+                    3, 2, 1
                 });
 
             int count = 30;
             for (int i = 0; i < count; i++)
             {
                 double expected = i * 2 * Math.PI / count;
-                var coord = new SurfaceCoord(quad, 0, new Vector2(0.2f, 0.2f), (float)(expected + 3 * Math.PI / 2));
+                var coord = new SurfaceCoord(quad, 0, new Vector2(0.2f, 0.2f), (float)(expected + Math.PI));
                 var moved = coord.Move(new Vector2(0.6f, 0.6f));
                 double diff = MathExt.AngleDiff(expected, moved.Rotation);
                 Assert.IsTrue(Math.Abs(diff) < 0.0001);
             }
+        }
+
+        [TestMethod]
+        public void MoveCorrectRotationTest3()
+        {
+            var quad = new ReadOnlyMesh(
+                new[] {
+                    new Vector3(),
+                    new Vector3(0, 1, 0),
+                    new Vector3(1, 0, 0),
+                    new Vector3(1, 1, 0)
+                },
+                new[] {
+                    0, 1, 2,
+                    2, 1, 3
+                });
+
+            double expected = 5 * Math.PI / 4;
+            var coord = new SurfaceCoord(quad, 0, new Vector2(0.2f, 0.2f), 0);
+            var moved = coord.Move(new Vector2(0.6f, 0.6f));
+            double diff = MathExt.AngleDiff(expected, moved.Rotation);
+            Assert.IsTrue(Math.Abs(diff) < 0.0001);
         }
     }
 }
