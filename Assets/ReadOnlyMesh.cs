@@ -14,10 +14,10 @@ namespace Assets
         /// <summary>
         /// Indices pointing into the _vertices array. The indices are stored as [triangle index, edge index].
         /// </summary>
-        readonly int[,] _triangles;
+        readonly Triangle[] _triangles;
         readonly Vector3[] _vertices;
         public Vector3[] Vertices { get { return _vertices.ToArray(); } }
-        public int TriangleCount { get { return _triangles.GetLength(0); } }
+        public int TriangleCount { get { return _triangles.Length; } }
         /// <summary>
         /// Lookup table for finding neighboring triangles. The data is stored as [triangle index, edge index].
         /// </summary>
@@ -32,16 +32,14 @@ namespace Assets
         {
             Debug.Assert(triangles.Length % Constants.SidesOnTriangle == 0);
 
-            _triangles = new int[triangles.Length / Constants.SidesOnTriangle, Constants.SidesOnTriangle];
+            _triangles = new Triangle[triangles.Length / Constants.SidesOnTriangle];
             _adjacentTriangles = new int?[TriangleCount, Constants.SidesOnTriangle];
             _vertices = vertices.ToArray();
 
             for (int i = 0; i < TriangleCount; i++)
             {
                 int index = i * Constants.SidesOnTriangle;
-                _triangles[i, 0] = triangles[index];
-                _triangles[i, 1] = triangles[index + 1];
-                _triangles[i, 2] = triangles[index + 2];
+                _triangles[i] = new Triangle(triangles[index], triangles[index + 1], triangles[index + 2]);
             }
             
             UpdateAdjacentTriangles();
@@ -63,23 +61,13 @@ namespace Assets
             }
         }
 
-        public int[] GetTriangleIndices(int triangleIndex)
-        {
-            return new[]
-            {
-                _triangles[triangleIndex, 0],
-                _triangles[triangleIndex, 1],
-                _triangles[triangleIndex, 2]
-            };
-        }
-
         public Vector3[] GetTriangle(int triangleIndex)
         {
             return new[]
             {
-                _vertices[_triangles[triangleIndex, 0]],
-                _vertices[_triangles[triangleIndex, 1]],
-                _vertices[_triangles[triangleIndex, 2]]
+                _vertices[_triangles[triangleIndex][0]],
+                _vertices[_triangles[triangleIndex][1]],
+                _vertices[_triangles[triangleIndex][2]]
             };
         }
 
@@ -126,22 +114,22 @@ namespace Assets
         {
             Debug.Assert(edgeIndex >= 0 && edgeIndex < Constants.SidesOnTriangle);
 
-            int vertexIndice0 = _triangles[triangleIndex, edgeIndex];
-            int vertexIndice1 = _triangles[triangleIndex, (edgeIndex + 1) % Constants.SidesOnTriangle];
+            int vertexIndice0 = _triangles[triangleIndex][edgeIndex];
+            int vertexIndice1 = _triangles[triangleIndex][(edgeIndex + 1) % Constants.SidesOnTriangle];
 
-            for (int i = 0; i < _triangles.Length / Constants.SidesOnTriangle; i++)
+            for (int i = 0; i < _triangles.Length; i++)
             {
                 if (i == triangleIndex)
                 {
                     continue;
                 }
-                if (_triangles[i, 0] == vertexIndice0 ||
-                    _triangles[i, 1] == vertexIndice0 ||
-                    _triangles[i, 2] == vertexIndice0)
+                if (_triangles[i][0] == vertexIndice0 ||
+                    _triangles[i][1] == vertexIndice0 ||
+                    _triangles[i][2] == vertexIndice0)
                 {
-                    if (_triangles[i, 0] == vertexIndice1 ||
-                        _triangles[i, 1] == vertexIndice1 ||
-                        _triangles[i, 2] == vertexIndice1)
+                    if (_triangles[i][0] == vertexIndice1 ||
+                        _triangles[i][1] == vertexIndice1 ||
+                        _triangles[i][2] == vertexIndice1)
                     {
                         return i;
                     }
@@ -174,16 +162,16 @@ namespace Assets
             {
                 for (int j = 0; j < Constants.SidesOnTriangle; j++)
                 {
-                    if (_triangles[triangleIndex, i] == _triangles[adjacentTriangleIndex, j])
+                    if (_triangles[triangleIndex][i] == _triangles[adjacentTriangleIndex][j])
                     {
                         int iNext = (i + 1) % Constants.SidesOnTriangle;
                         int jNext = (j + 1) % Constants.SidesOnTriangle;
                         int jPrev = (j + Constants.SidesOnTriangle - 1) % Constants.SidesOnTriangle;
-                        if (_triangles[triangleIndex, iNext] == _triangles[adjacentTriangleIndex, jNext])
+                        if (_triangles[triangleIndex][iNext] == _triangles[adjacentTriangleIndex][jNext])
                         {
                             return new TriangleEdge(j, jNext);
                         }
-                        else if (_triangles[triangleIndex, iNext] == _triangles[adjacentTriangleIndex, jPrev])
+                        else if (_triangles[triangleIndex][iNext] == _triangles[adjacentTriangleIndex][jPrev])
                         {
                             return new TriangleEdge(j, jPrev);
                         }
@@ -316,8 +304,8 @@ namespace Assets
 
         public int GetAdjacentFreeVerticeIndex(int triangleIndex, int adjacentTriangleIndex)
         {
-            return GetTriangleIndices(adjacentTriangleIndex)
-                .First(item => !GetTriangleIndices(triangleIndex).Contains(item));
+            return _triangles[adjacentTriangleIndex]
+                .Indices.First(item => !_triangles[triangleIndex].Indices.Contains(item));
         }
     }
 }

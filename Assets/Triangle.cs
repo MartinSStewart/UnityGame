@@ -5,26 +5,28 @@ namespace Assets
 {
     public struct Triangle
     {
-        readonly int[] _vertices;
+        readonly int[] _indices;
+
+        public int[] Indices { get { return _indices.ToArray(); } }
 
         public int this[int index]
         {
-            get { return _vertices[index]; }
+            get { return _indices[index]; }
             set
             {
-                _vertices[index] = value;
+                _indices[index] = value;
             }
         }
 
         public Triangle(IList<int> indices)
         {
             Debug.Assert(indices.Count == Constants.SidesOnTriangle);
-            _vertices = indices.ToArray();
+            _indices = indices.ToArray();
         }
 
         public Triangle(int i0, int i1, int i2)
         {
-            _vertices = new[] { i0, i1, i2 };
+            _indices = new[] { i0, i1, i2 };
         }
     }
 }
